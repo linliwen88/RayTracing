@@ -35,18 +35,21 @@
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\lightCube_vshader.glsl">
+    <None Include="shaders\lightSource_vshader.glsl">
       <Filter>Source Files\shaders</Filter>
     </None>
-    <None Include="shaders\light_fshader.glsl">
+    <None Include="shaders\object_fshader.glsl">
       <Filter>Source Files\shaders</Filter>
     </None>
-    <None Include="shaders\light_vshader.glsl">
+    <None Include="shaders\object_vshader.glsl">
       <Filter>Source Files\shaders</Filter>
     </None>
-    <None Include="shaders\lightCube_fshader.glsl">
+    <None Include="shaders\lightSource_fshader.glsl">
       <Filter>Source Files\shaders</Filter>
     </None>
   </ItemGroup>
