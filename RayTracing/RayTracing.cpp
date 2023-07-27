@@ -157,8 +157,8 @@ int main()
     glEnableVertexAttribArray(1);
 
     // shaders
-    Shader ourShader("./vertex_shader.glsl", "./fragment_shader.glsl");
-    ourShader.use();
+    Shader lightShader("shaders/light_vshader.glsl", "shaders/light_fshader.glsl");
+    lightShader.use();
 
     // load and generate texture
     unsigned int textures[2];
@@ -208,6 +208,11 @@ int main()
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
+        // per-frame logic
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         // input
         processInput(window);
 
@@ -223,9 +228,9 @@ int main()
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
-        ourShader.use();
-        ourShader.setInt("texture0", 0);
-        ourShader.setInt("texture1", 1);
+        lightShader.use();
+        lightShader.setInt("texture0", 0);
+        lightShader.setInt("texture1", 1);
 
         // mvp matrices
         const float radius = 10.0f;
@@ -237,8 +242,8 @@ int main()
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
-        ourShader.setMat4("view", view);
-        ourShader.setMat4("projection", projection);
+        lightShader.setMat4("view", view);
+        lightShader.setMat4("projection", projection);
 
 
         for (int i = 0; i < 10; i++) {
@@ -246,7 +251,7 @@ int main()
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader.setMat4("model", model);
+            lightShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
@@ -269,10 +274,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
-    float currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
-
     const float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {

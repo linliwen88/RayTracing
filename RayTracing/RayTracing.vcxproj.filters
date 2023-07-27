@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{2f96af15-4030-44c1-b570-f370c2d7d8fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RayTracing.cpp">
@@ -26,19 +29,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertex_shader.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="fragment_shader.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\lightCube_vshader.glsl">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\light_fshader.glsl">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\light_vshader.glsl">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\lightCube_fshader.glsl">
+      <Filter>Source Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
