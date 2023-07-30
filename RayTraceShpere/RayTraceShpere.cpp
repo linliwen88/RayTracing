@@ -34,6 +34,16 @@ float vertices[] = {
     30.0f, 25.0f, -30.0f // top right
 };
 
+float vertices_clip_space[] = {
+    -1.0f, -1.0f, 0.0f, // bottom left
+    1.0f, -1.0f, 0.0f, // bottom right
+    -1.0f, 1.0f, 0.0f,// top left
+
+    -1.0f, 1.0f, 0.0f,// top left
+    1.0f, -1.0f, 0.0f, // bottom right
+    1.0f, 1.0f, 0.0f // top right
+};
+
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -84,7 +94,7 @@ int main()
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    // glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
     std::cout << "Hello World!\n";
@@ -98,7 +108,7 @@ int main()
     unsigned int VBO;
     glGenBuffers(1, &VBO); // generating buffer ID
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_clip_space), vertices_clip_space, GL_STATIC_DRAW);
 
     // set vertex attribute pointers
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -142,9 +152,12 @@ int main()
         objectShader.setMat4("view", view);
         objectShader.setMat4("projection", projection);
 
-        // objectShader.setVec3("sphereOrigin", sphere.Origin);
-        // objectShader.setFloat("sphereRadius", sphere.Radius);
+        objectShader.setFloat("aspectRatio", (float)SCR_WIDTH / (float)SCR_HEIGHT);
+
         objectShader.setVec3("cameraPos", camera.Position);
+        objectShader.setVec3("cameraDir", camera.Front);
+        objectShader.setVec3("cameraRight", camera.Right);
+        objectShader.setVec3("cameraUp", camera.Up);
 
         objectShader.setInt("hittableCount", HittableList.size());
         objectShader.setHittable("sphere", HittableList);

@@ -3,10 +3,24 @@ out vec4 FragColor;
 
 in vec3 fragPos; // world space
 
+uniform float aspectRatio;
+
 uniform vec3 cameraPos;
+uniform vec3 cameraDir;
+uniform vec3 cameraRight;
+uniform vec3 cameraUp;
+
 uniform int hittableCount;
 uniform float sphereOrigins[300];
 uniform float sphereRadiuses[100];
+
+// define viewport in world space
+float viewportHeight = 2.0;
+float viewportWidth = viewportHeight * aspectRatio;
+vec3 horizontal = viewportWidth * normalize(cameraRight);
+vec3 vertical = viewportHeight * normalize(cameraUp);
+vec3 lowerLeftCorner = cameraPos - ((viewportWidth / 2.0) * normalize(cameraRight)) - ((viewportHeight / 2.0) * normalize(cameraUp)) + 4 * normalize(cameraDir);
+vec3 currentViewportPoint = lowerLeftCorner + ((gl_FragCoord.x / 800.0) * horizontal) + ((gl_FragCoord.y / 600.0) * vertical);
 
 struct HitRecord {
     vec3 point;
@@ -16,7 +30,7 @@ struct HitRecord {
 };
 
 bool sphereHit(in vec3 s_origin, in float s_radius, in float t_min, inout float t_max, inout HitRecord rec) {
-    vec3 rayDirection = fragPos - cameraPos;
+    vec3 rayDirection = currentViewportPoint - cameraPos;
     vec3 oc = cameraPos - s_origin;
     float a = dot(rayDirection, rayDirection);
     float half_b = dot(oc, rayDirection);
@@ -47,9 +61,9 @@ bool sphereHit(in vec3 s_origin, in float s_radius, in float t_min, inout float 
     
 }
 
+
 void main()
 {
-
     HitRecord rec;
     float t_min = 0.0;
     float t_max = 1000.0;
