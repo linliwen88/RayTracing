@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "stb_image.h"
+#include <vector>
 
 #include "Shader.h"
 #include "Camera.h"
@@ -24,13 +25,13 @@ const unsigned int SCR_HEIGHT = 600.0f;
 
 // traingle vertices, rendering canvas coordinates in world space
 float vertices[] = {
-    -3.0f, -2.5f, -3.0f, // bottom left
-    3.0f, -2.5f, -3.0f, // bottom right
-    -3.0f, 2.5f, -3.0f,// top left
+    -30.0f, -25.0f, -30.0f, // bottom left
+    30.0f, -25.0f, -30.0f, // bottom right
+    -30.0f, 25.0f, -30.0f,// top left
 
-    -3.0f, 2.5f, -3.0f,// top left
-    3.0f, -2.5f, -3.0f, // bottom right
-    3.0f, 2.5f, -3.0f // top right
+    -30.0f, 25.0f, -30.0f,// top left
+    30.0f, -25.0f, -30.0f, // bottom right
+    30.0f, 25.0f, -30.0f // top right
 };
 
 // camera
@@ -46,8 +47,11 @@ float lastFrame = 0.0f; // time of last frame
 // lighting
 glm::vec3 lightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 
+// RAY TRACING WORLD
+std::vector<Sphere> HittableList;
+
 // sphere
-Sphere sphere(glm::vec3(0.0f, 0.0f, 0.0f), 0.5f);
+
 
 
 int main()
@@ -80,7 +84,7 @@ int main()
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    // glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
     std::cout << "Hello World!\n";
@@ -103,6 +107,14 @@ int main()
     // shaders
     Shader objectShader("shaders/object_vshader.glsl", "shaders/object_fshader.glsl");
     objectShader.use();
+
+    // add hittable spheres into ray tracing world
+    Sphere sphere_1(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f);
+    Sphere sphere_2(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f);
+    Sphere sphere_3(glm::vec3(1.0f, 1.0f, -1.0f), 0.2f);
+    HittableList.push_back(sphere_1);
+    HittableList.push_back(sphere_2);
+    HittableList.push_back(sphere_3);
 
 
     // render loop
@@ -130,9 +142,12 @@ int main()
         objectShader.setMat4("view", view);
         objectShader.setMat4("projection", projection);
 
-        objectShader.setVec3("sphereOrigin", sphere.Origin);
-        objectShader.setFloat("sphereRadius", sphere.Radius);
+        // objectShader.setVec3("sphereOrigin", sphere.Origin);
+        // objectShader.setFloat("sphereRadius", sphere.Radius);
         objectShader.setVec3("cameraPos", camera.Position);
+
+        objectShader.setInt("hittableCount", HittableList.size());
+        objectShader.setHittable("sphere", HittableList);
         objectShader.use();
         glDrawArrays(GL_TRIANGLES, 0, 6);
         
