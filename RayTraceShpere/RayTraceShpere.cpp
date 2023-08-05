@@ -10,6 +10,8 @@
 #include "stb_image.h"
 #include <vector>
 
+#include "RenderAttributes.h"
+#include "Utilities.h"
 #include "Shader.h"
 #include "Camera.h"
 #include "Sphere.h"
@@ -19,22 +21,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
-// settings
-const unsigned int SCR_WIDTH = 800.0f;
-const unsigned int SCR_HEIGHT = 600.0f;
 
-// traingle vertices, rendering canvas coordinates in world space
+// traingle vertices in clip space
 float vertices[] = {
-    -30.0f, -25.0f, -30.0f, // bottom left
-    30.0f, -25.0f, -30.0f, // bottom right
-    -30.0f, 25.0f, -30.0f,// top left
-
-    -30.0f, 25.0f, -30.0f,// top left
-    30.0f, -25.0f, -30.0f, // bottom right
-    30.0f, 25.0f, -30.0f // top right
-};
-
-float vertices_clip_space[] = {
     -1.0f, -1.0f, 0.0f, // bottom left
     1.0f, -1.0f, 0.0f, // bottom right
     -1.0f, 1.0f, 0.0f,// top left
@@ -60,10 +49,6 @@ glm::vec3 lightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 // RAY TRACING WORLD
 std::vector<Sphere> HittableList;
 
-// sphere
-
-
-
 int main()
 {
     // Intialize and configure glfw
@@ -74,7 +59,7 @@ int main()
 
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Ray Trace Sphere", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow((int)SCR_WIDTH, (int)SCR_HEIGHT, "Ray Trace Sphere", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -108,23 +93,23 @@ int main()
     unsigned int VBO;
     glGenBuffers(1, &VBO); // generating buffer ID
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_clip_space), vertices_clip_space, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // set vertex attribute pointers
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     // shaders
-    Shader objectShader("shaders/object_vshader.glsl", "shaders/object_fshader.glsl");
-    objectShader.use();
+    Shader rayTraceShader("shaders/vshader.glsl", "shaders/fshader.glsl");
+    rayTraceShader.use();
 
     // add hittable spheres into ray tracing world
     Sphere sphere_1(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f);
-    Sphere sphere_2(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f);
-    Sphere sphere_3(glm::vec3(1.0f, 1.0f, -1.0f), 0.2f);
+    Sphere sphere_2(glm::vec3(1.0f, 1.0f, -1.0f), 0.2f);
+    Sphere ground(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f);
     HittableList.push_back(sphere_1);
     HittableList.push_back(sphere_2);
-    HittableList.push_back(sphere_3);
+    HittableList.push_back(ground);
 
 
     // render loop
@@ -148,25 +133,27 @@ int main()
 
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        objectShader.setMat4("view", view);
-        objectShader.setMat4("projection", projection);
+        projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+        rayTraceShader.setMat4("view", view);
+        rayTraceShader.setMat4("projection", projection);
 
-        objectShader.setFloat("aspectRatio", (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
-        objectShader.setVec3("cameraPos", camera.Position);
-        objectShader.setVec3("cameraDir", camera.Front);
-        objectShader.setVec3("cameraRight", camera.Right);
-        objectShader.setVec3("cameraUp", camera.Up);
+        rayTraceShader.setBool("ANTI_ALIAS", ANTI_ALIAS);
+        rayTraceShader.setInt("samples_per_pixel", (ANTI_ALIAS)? samples_per_pixel : 1);
+        rayTraceShader.setFloat("screenWidth", SCR_WIDTH);
+        rayTraceShader.setFloat("screenHeight", SCR_HEIGHT);
 
-        objectShader.setInt("hittableCount", HittableList.size());
-        objectShader.setHittable("sphere", HittableList);
-        objectShader.use();
+        rayTraceShader.setVec3("cameraPos", camera.Position);
+        rayTraceShader.setVec3("horizontal", camera.horizontal);
+        rayTraceShader.setVec3("vertical", camera.vertical);
+        rayTraceShader.setVec3("lowerLeftCorner", camera.lowerLeftCorner);
+
+        rayTraceShader.setInt("hittableCount", HittableList.size());
+        rayTraceShader.setHittable("sphere", HittableList);
+        rayTraceShader.use();
         glDrawArrays(GL_TRIANGLES, 0, 6);
         
-
         glBindVertexArray(0);
-
 
 
         // check all events and swap the buffers
@@ -189,6 +176,16 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canSwitch) {
+        ANTI_ALIAS = !ANTI_ALIAS;
+        std::cout << "Anti-Aliasing: " << ANTI_ALIAS << std::endl;
+        canSwitch = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+        canSwitch = true;
+    }
+
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);

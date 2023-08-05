@@ -138,15 +138,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="RenderAttributes.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\lightSource_fshader.glsl" />
-    <None Include="shaders\lightSource_vshader.glsl" />
-    <None Include="shaders\object_fshader.glsl" />
-    <None Include="shaders\object_vshader.glsl" />
+    <None Include="shaders\fshader.glsl" />
+    <None Include="shaders\vshader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

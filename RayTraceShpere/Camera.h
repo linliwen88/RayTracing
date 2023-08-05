@@ -42,6 +42,13 @@ public:
     float MouseSensitivity;
     float Zoom;
 
+    // viewport attributes
+    float viewportHeight = 2.0;
+    float viewportWidth = ASPECT_RATIO * viewportHeight;
+    glm::vec3 lowerLeftCorner;
+    glm::vec3 horizontal;
+    glm::vec3 vertical;
+
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
@@ -79,6 +86,7 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+        updateCameraVectors();
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -126,6 +134,10 @@ private:
         // also re-calculate the Right and Up vector
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up = glm::normalize(glm::cross(Right, Front));
+        
+        horizontal = viewportWidth * Right;
+        vertical = viewportHeight * Up;
+        lowerLeftCorner = Position - ((viewportWidth / 2.0f) * Right) - ((viewportHeight / 2.0f) * Up) + 2.0f * Front;
     }
 };
 #endif

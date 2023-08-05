@@ -41,18 +41,18 @@
     <ClInclude Include="Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderAttributes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\lightSource_fshader.glsl">
+    <None Include="shaders\fshader.glsl">
       <Filter>Source Files\shaders</Filter>
     </None>
-    <None Include="shaders\lightSource_vshader.glsl">
-      <Filter>Source Files\shaders</Filter>
-    </None>
-    <None Include="shaders\object_fshader.glsl">
-      <Filter>Source Files\shaders</Filter>
-    </None>
-    <None Include="shaders\object_vshader.glsl">
+    <None Include="shaders\vshader.glsl">
       <Filter>Source Files\shaders</Filter>
     </None>
   </ItemGroup>
