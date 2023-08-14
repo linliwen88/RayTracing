@@ -106,18 +106,19 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void setHittable(const std::string& name, std::vector<Sphere>& hittableList) const
+    void setWorld(const std::string& name, std::vector<Sphere* >& world) const
     {
         float radiuses[100];
-        float origins[3 * 100];
-        for (int i = 0; i < hittableList.size(); i++) {
-            radiuses[i] = hittableList[i].Radius;
-            origins[3 * i] = hittableList[i].Origin.x;
-            origins[(3 * i) + 1] = hittableList[i].Origin.y;
-            origins[(3 * i) + 2] = hittableList[i].Origin.z;
+        glm::vec3 origins[100];
+        for (int i = 0; i < world.size(); i++) {
+            origins[i] = world[i]->Origin;
+            radiuses[i] = world[i]->Radius;
+            // origins[3 * i] = world[i]->Origin.x;
+            // origins[(3 * i) + 1] = world[i]->Origin.y;
+            // origins[(3 * i) + 2] = world[i]->Origin.z;
         }
         glUniform1fv(glGetUniformLocation(ID, (name + "Radiuses").c_str()), 100, radiuses);
-        glUniform1fv(glGetUniformLocation(ID, (name + "Origins").c_str()), 300, origins);
+        glUniform3fv(glGetUniformLocation(ID, (name + "Origins").c_str()), 100, glm::value_ptr(origins[0]));
     }
 
 
