@@ -20,7 +20,7 @@ uniform vec3 horizontal;
 uniform vec3 vertical;
 uniform vec3 lowerLeftCorner;
 
-int maxRayBounce = 1000;
+int maxRayBounce = 50;
 vec3 lightBlue = vec3(0.5, 0.7, 1.0);
 vec3 black = vec3(0.0, 0.0, 0.0);
 vec3 red = vec3(1.0, 0.0, 0.0);
@@ -48,6 +48,7 @@ struct Sphere {
 };
 
 // utility functions
+// TODO: better random functions
 float rand(vec2 co, float min, float max){
     // return random float between [min, max]
     return (fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453)) * (max - min) - min;
@@ -60,10 +61,6 @@ vec3 randVec3(vec3 co) {
 
 
 bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_max, inout HitRecord rec) {
-    // vec3 oc = cameraPos - sphere.origin;
-    if(abs(length(ray.origin - sphere.origin) - sphere.radius) < 0.001) {
-        return false;
-    }
     vec3 oc = ray.origin - sphere.origin;
     ray.direction = normalize(ray.direction);
     float a = dot(ray.direction, ray.direction);
@@ -85,7 +82,6 @@ bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_m
     }
 
     rec.t = root;
-    // rec.point = cameraPos + (root * ray.direction);
     rec.point = ray.origin + (root * ray.direction);
 
     vec3 outward_normal = (rec.point - sphere.origin) / sphere.radius;
@@ -97,14 +93,13 @@ bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_m
 
 vec3 ray_color(inout Ray ray) {
     vec3 rayColor = vec3(0.0);
+    HitRecord rec;
+    float t_min = 0.01;
+    float t_max = 1000.0;
+    float closest_so_far = t_max;
+    bool hitAnything = false;
 
     if(SHADING_MODE == 0) {
-        HitRecord rec;
-        float t_min = 0.0;
-        float t_max = 1000.0;
-        float closest_so_far = t_max;
-        bool hitAnything = false;
-
         for(int i = 0; i < hittableCount; i++) {
             HitRecord tmp_rec;
             Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i]);
@@ -119,21 +114,14 @@ vec3 ray_color(inout Ray ray) {
             rayColor = 0.5 * (rec.normal + 1.0);
         }
         else { // draw background
-
             vec3 unitDirection = normalize(ray.direction);
             float t = (unitDirection.y + 1.0) * 0.5;
-            // float t = gl_FragCoord.y / screenHeight;
 
             rayColor = (1.0 - t) * white + t * lightBlue;
-
         }
     }
     else if(SHADING_MODE == 1) {
-        HitRecord rec;
-        float t_min = 0.0;
-        float t_max = 1000.0;
-        float closest_so_far = t_max;
-        bool hitAnything = false;
+        // recursive ray tracing in shader without recursion, use iteration        
         bool bounceEnd = false;
         int bounceCount = 0;
         float rayStrength = 1.0;
@@ -166,14 +154,6 @@ vec3 ray_color(inout Ray ray) {
                 if(dot(rec.normal, randomUnitVec) < 0.0) {
                     randomUnitVec = -randomUnitVec;
                 }
-                // if(length(ray.origin - rec.point) < 0.01) {
-                //     rayColor = green;
-                //     break;
-                // }
-                // if(rec.t == 0.0) {
-                //     rayColor = green;
-                //     break;
-                // }
                 ray.origin = rec.point;
                 ray.direction = randomUnitVec;
                 rayStrength *= 0.5;
@@ -189,22 +169,6 @@ vec3 ray_color(inout Ray ray) {
                     rayColor = ((1.0 - t) * white + t * lightBlue);
                     break;
                 }
-                // if(bounceCount == 1) {
-                //     // rayColor = ((1.0 - t) * white + t * lightBlue);
-                //     // rayColor = ((1.0 - t) * white + t * ray.direction);
-                //     rayColor = ((1.0 - t) * white + t * blue);
-                //     break;
-                // }
-                // if(bounceCount == 2) {
-                //     // rayColor = ((1.0 - t) * white + t * lightBlue);
-                //     rayColor = ((1.0 - t) * white + t * green);
-                //     break;
-                // }
-                // if(bounceCount >= 3) {
-                //     // rayColor = ((1.0 - t) * white + t * lightBlue);
-                //     rayColor = ((1.0 - t) * white + t * red);
-                //     break;
-                // }
                 rayColor = rayStrength * ((1.0 - t) * white + t * lightBlue);
             }
             bounceCount++;
@@ -214,6 +178,7 @@ vec3 ray_color(inout Ray ray) {
 
     return rayColor;
 }
+
 
 void get_ray(inout Ray ray) {
     float u = gl_FragCoord.x;
@@ -234,7 +199,6 @@ void get_ray(inout Ray ray) {
         ray = Ray(cameraPos, pixelCenter - cameraPos);
     }    
 }
-
 
 
 void main()
