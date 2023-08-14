@@ -47,7 +47,7 @@ float lastFrame = 0.0f; // time of last frame
 glm::vec3 lightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 
 // RAY TRACING WORLD
-std::vector<Sphere> HittableList;
+std::vector<Sphere* > world;
 
 int main()
 {
@@ -89,7 +89,7 @@ int main()
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    // vertex buffer object
+    // vertex buffer objectsa
     unsigned int VBO;
     glGenBuffers(1, &VBO); // generating buffer ID
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -105,11 +105,11 @@ int main()
 
     // add hittable spheres into ray tracing world
     Sphere sphere_1(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f);
-    Sphere sphere_2(glm::vec3(1.0f, 1.0f, -1.0f), 0.2f);
+    Sphere sphere_2(glm::vec3(0.75f, -0.25f, -1.0f), 0.25f);
     Sphere ground(glm::vec3(0.0f, -100.5f, -1.0f), 100.0f);
-    HittableList.push_back(sphere_1);
-    HittableList.push_back(sphere_2);
-    HittableList.push_back(ground);
+    world.push_back(&sphere_1);
+    world.push_back(&sphere_2);
+    world.push_back(&ground);
 
 
     // render loop
@@ -138,6 +138,7 @@ int main()
         rayTraceShader.setMat4("projection", projection);
 
 
+        rayTraceShader.setInt("SHADING_MODE", SHADING_MODE);
         rayTraceShader.setBool("ANTI_ALIAS", ANTI_ALIAS);
         rayTraceShader.setInt("samples_per_pixel", (ANTI_ALIAS)? samples_per_pixel : 1);
         rayTraceShader.setFloat("screenWidth", SCR_WIDTH);
@@ -148,8 +149,8 @@ int main()
         rayTraceShader.setVec3("vertical", camera.vertical);
         rayTraceShader.setVec3("lowerLeftCorner", camera.lowerLeftCorner);
 
-        rayTraceShader.setInt("hittableCount", HittableList.size());
-        rayTraceShader.setHittable("sphere", HittableList);
+        rayTraceShader.setInt("hittableCount", world.size());
+        rayTraceShader.setWorld("sphere", world);
         rayTraceShader.use();
         glDrawArrays(GL_TRIANGLES, 0, 6);
         
@@ -177,13 +178,22 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canSwitch) {
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && antiAliasUp) {
         ANTI_ALIAS = !ANTI_ALIAS;
-        std::cout << "Anti-Aliasing: " << ANTI_ALIAS << std::endl;
-        canSwitch = false;
+        std::cout << "ANTI_ALIAS: " << ANTI_ALIAS << std::endl;
+        antiAliasUp = false;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-        canSwitch = true;
+        antiAliasUp = true;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && shadeModeUp) {
+        SHADING_MODE = (SHADING_MODE + 1) % 2;
+        std::cout << "SHADING_MODE: " << SHADING_MODE << std::endl;
+        shadeModeUp = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE) {
+        shadeModeUp = true;
     }
 
 
