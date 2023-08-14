@@ -11,4 +11,8 @@ const int samples_per_pixel = 100;
 
 // anti-aliasing
 bool ANTI_ALIAS = false;
-bool canSwitch = true;
+bool antiAliasUp = true;
+
+// shading mode control
+int SHADING_MODE = 1;
+bool shadeModeUp = true;
