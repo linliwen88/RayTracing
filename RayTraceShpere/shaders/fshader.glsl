@@ -51,16 +51,19 @@ struct Sphere {
 // TODO: better random functions
 float rand(vec2 co, float min, float max){
     // return random float between [min, max]
-    return (fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453)) * (max - min) - min;
+    return (fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453)) * (max - min) + min;
 }
 
 vec3 randVec3(vec3 co) {
     // return vec3(rand(co.xy, -1.0, 1.0), rand(co.yz, -1.0, 1.0), rand(co.xz, -1.0, 1.0));
-    return vec3(rand(co.xy, 0.0, 1.0), rand(co.yz, -0.0, 1.0), rand(co.xz, -0.0, 1.0));
+    return vec3(rand(co.xy, -1.0, 1.0), rand(co.yz, -1.0, 1.0), rand(co.xz, -1.0, 1.0));
 }
 
 
 bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_max, inout HitRecord rec) {
+    // if(length(ray.origin - sphere.origin) - sphere.radius < 0.01) {
+    //     return false;
+    // }
     vec3 oc = ray.origin - sphere.origin;
     ray.direction = normalize(ray.direction);
     float a = dot(ray.direction, ray.direction);
@@ -121,7 +124,7 @@ vec3 ray_color(inout Ray ray) {
         }
     }
     else if(SHADING_MODE == 1) {
-        // recursive ray tracing in shader without recursion, use iteration        
+        // use iteration for ray tracing without recursion in shader
         bool bounceEnd = false;
         int bounceCount = 0;
         float rayStrength = 1.0;
@@ -144,13 +147,9 @@ vec3 ray_color(inout Ray ray) {
             }
 
             if(hitAnything) { // draw sphere
-                vec3 randomVec = randVec3(rec.point);
-
-                while(length(randomVec) > 1.0) {
-                    randomVec = randVec3(rec.point);
-                }
-                vec3 randomUnitVec = normalize(randomVec);
-                // randomUnitVec = vec3(1.0, 0.0, 0.0);
+                // vec3 randomVec = randVec3(rec.point);
+                // vec3 randomUnitVec = normalize(randomVec);
+                vec3 randomUnitVec = rec.normal + normalize(randVec3(rec.point));
                 if(dot(rec.normal, randomUnitVec) < 0.0) {
                     randomUnitVec = -randomUnitVec;
                 }
@@ -162,17 +161,20 @@ vec3 ray_color(inout Ray ray) {
                 bounceEnd = true;
                 vec3 unitDirection = normalize(ray.direction);
                 float t = (unitDirection.y + 1.0) * 0.5;
-                // float t = gl_FragCoord.y / screenHeight;
 
                 if(bounceCount == 0) {
-                    // rayColor = ((1.0 - t) * white + t * lightBlue);
-                    rayColor = ((1.0 - t) * white + t * lightBlue);
+                    rayColor = (1.0 - t) * white + t * lightBlue;
                     break;
                 }
                 rayColor = rayStrength * ((1.0 - t) * white + t * lightBlue);
             }
-            bounceCount++;
+
+            // clear hit information for next iteration
             hitAnything = false;
+            closest_so_far = t_max;
+
+            // increase ray bounce count
+            bounceCount++;
         }
     }
 
