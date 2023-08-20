@@ -20,7 +20,7 @@ uniform vec3 horizontal;
 uniform vec3 vertical;
 uniform vec3 lowerLeftCorner;
 
-int maxRayBounce = 50;
+int maxRayBounce = 10;
 vec3 lightBlue = vec3(0.5, 0.7, 1.0);
 vec3 black = vec3(0.0, 0.0, 0.0);
 vec3 red = vec3(1.0, 0.0, 0.0);
@@ -97,7 +97,7 @@ bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_m
 vec3 ray_color(inout Ray ray) {
     vec3 rayColor = vec3(0.0);
     HitRecord rec;
-    float t_min = 0.01;
+    float t_min = 0.1;
     float t_max = 1000.0;
     float closest_so_far = t_max;
     bool hitAnything = false;
@@ -155,7 +155,7 @@ vec3 ray_color(inout Ray ray) {
                 }
                 ray.origin = rec.point;
                 ray.direction = randomUnitVec;
-                rayStrength *= 0.5;
+                rayStrength *= 0.7;
             }
             else { // draw background
                 bounceEnd = true;
