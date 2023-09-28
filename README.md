@@ -1,6 +1,7 @@
 # RayTracing
 A ray tracing engine written with OpenGL
-![Diffuse materials](/pics/diffuse_materials.png "Diffuse materials")
+
+![Diffuse materials](/pics/record.gif "Diffuse materials")
 #### Ray tracing parameters (in `fshader.glsl`):
  - t_min = 0.1. The minimum `t` to solve for ray intersection with object. Larger than 0 to deal with shadow acne.
   - rayStrength. Times 0.7 after each bounce. The lower the darker the scene.
