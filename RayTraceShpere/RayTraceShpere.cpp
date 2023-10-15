@@ -116,6 +116,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
+
         // per-frame logic
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;

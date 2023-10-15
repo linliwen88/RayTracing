@@ -10,7 +10,7 @@ const float SCR_WIDTH = ASPECT_RATIO * SCR_HEIGHT;
 const int samples_per_pixel = 100;
 
 // anti-aliasing
-bool ANTI_ALIAS = false;
+bool ANTI_ALIAS = true;
 bool antiAliasUp = true;
 
 // shading mode control

@@ -20,12 +20,8 @@ uniform vec3 horizontal;
 uniform vec3 vertical;
 uniform vec3 lowerLeftCorner;
 
-int maxRayBounce = 10;
+int maxRayBounce = 15;
 vec3 lightBlue = vec3(0.5, 0.7, 1.0);
-vec3 black = vec3(0.0, 0.0, 0.0);
-vec3 red = vec3(1.0, 0.0, 0.0);
-vec3 green = vec3(0.0, 1.0, 0.0);
-vec3 blue = vec3(0.0, 0.0, 1.0);
 
 vec3 white = vec3(1.0, 1.0, 1.0);
 
@@ -51,21 +47,39 @@ struct Sphere {
 // TODO: better random functions
 float rand(vec2 co, float min, float max){
     // return random float between [min, max]
-    return (fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453)) * (max - min) + min;
+    return fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453123) * (max - min) + min;
 }
 
-vec3 randVec3(vec3 co) {
-    // return vec3(rand(co.xy, -1.0, 1.0), rand(co.yz, -1.0, 1.0), rand(co.xz, -1.0, 1.0));
-    return vec3(rand(co.xy, -1.0, 1.0), rand(co.yz, -1.0, 1.0), rand(co.xz, -1.0, 1.0));
+vec3 randVec3(vec3 seed) {
+    return vec3(rand(seed.xy, -0.5, 0.5), rand(seed.yz, -0.5, 0.5), rand(seed.xz, -0.5, 0.5));
 }
 
+vec3 random_in_unit_sphere(in vec3 seed) {
+    vec3 p = randVec3(seed);
+    
+    // supposed to reject random vector when length > 1.0, but random function is lowzy so not practical
+    // for(float i = 0.0f; i < 100.0f; i += 1.0f) {
+    //     p = randVec3(seed + vec3(i));
+    //     if(p.length() <= 2.0f) return p;
+    // }
+    return p;
+}
+
+vec3 random_on_hemisphere(in vec3 seed, in vec3 normal) {
+    vec3 p = normalize(random_in_unit_sphere(seed));
+    if(dot(p, normal) < 0.0) {
+        p = -p;
+    }
+
+    return p;
+}
 
 bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_max, inout HitRecord rec) {
     // if(length(ray.origin - sphere.origin) - sphere.radius < 0.01) {
     //     return false;
     // }
     vec3 oc = ray.origin - sphere.origin;
-    ray.direction = normalize(ray.direction);
+    // ray.direction = normalize(ray.direction);
     float a = dot(ray.direction, ray.direction);
     float half_b = dot(oc, ray.direction);
     float c = dot(oc, oc) - sphere.radius * sphere.radius;
@@ -94,6 +108,7 @@ bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_m
     return true;
 }
 
+// Bounce the ray and determine color by whether it hits object in the scene.
 vec3 ray_color(inout Ray ray) {
     vec3 rayColor = vec3(0.0);
     HitRecord rec;
@@ -102,7 +117,7 @@ vec3 ray_color(inout Ray ray) {
     float closest_so_far = t_max;
     bool hitAnything = false;
 
-    if(SHADING_MODE == 0) {
+    if(SHADING_MODE == 0) { // show the object's normal
         for(int i = 0; i < hittableCount; i++) {
             HitRecord tmp_rec;
             Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i]);
@@ -123,7 +138,7 @@ vec3 ray_color(inout Ray ray) {
             rayColor = (1.0 - t) * white + t * lightBlue;
         }
     }
-    else if(SHADING_MODE == 1) {
+    else if(SHADING_MODE == 1) { // diffuse material
         // use iteration for ray tracing without recursion in shader
         bool bounceEnd = false;
         int bounceCount = 0;
@@ -135,7 +150,7 @@ vec3 ray_color(inout Ray ray) {
                 break;
             }
 
-            for(int i = 0; i < hittableCount; i++) {
+            for(int i = 0; i < hittableCount; i++) { // check all objects for ray hit
                 HitRecord tmp_rec;
                 Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i]);
 
@@ -147,15 +162,10 @@ vec3 ray_color(inout Ray ray) {
             }
 
             if(hitAnything) { // draw sphere
-                // vec3 randomVec = randVec3(rec.point);
-                // vec3 randomUnitVec = normalize(randomVec);
-                vec3 randomUnitVec = rec.normal + normalize(randVec3(rec.point));
-                if(dot(rec.normal, randomUnitVec) < 0.0) {
-                    randomUnitVec = -randomUnitVec;
-                }
                 ray.origin = rec.point;
-                ray.direction = randomUnitVec;
-                rayStrength *= 0.7;
+                ray.direction = normalize(rec.normal + random_in_unit_sphere(rec.point)); // lambertian reflection
+                // ray.direction = random_on_hemisphere(rec.point, rec.normal); // random reflection
+                rayStrength *= 0.5;
             }
             else { // draw background
                 bounceEnd = true;
@@ -181,7 +191,7 @@ vec3 ray_color(inout Ray ray) {
     return rayColor;
 }
 
-
+// Set the ray's origin point and direction, which is from the camera to a pixel on the screen.
 void get_ray(inout Ray ray) {
     float u = gl_FragCoord.x;
     float v = gl_FragCoord.y;
