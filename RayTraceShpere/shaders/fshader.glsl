@@ -163,8 +163,8 @@ vec3 ray_color(inout Ray ray) {
 
             if(hitAnything) { // draw sphere
                 ray.origin = rec.point;
-                ray.direction = normalize(rec.normal + random_in_unit_sphere(rec.point)); // lambertian reflection
-                // ray.direction = random_on_hemisphere(rec.point, rec.normal); // random reflection
+                // ray.direction = normalize(rec.normal + random_in_unit_sphere(rec.point)); // lambertian reflection
+                ray.direction = random_on_hemisphere(rec.point, rec.normal); // random reflection
                 rayStrength *= 0.5;
             }
             else { // draw background
