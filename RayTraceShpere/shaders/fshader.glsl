@@ -74,6 +74,10 @@ vec3 random_on_hemisphere(in vec3 seed, in vec3 normal) {
     return p;
 }
 
+void linear_to_gamma_space(inout vec4 linear_component) {
+    linear_component = sqrt(linear_component);
+}
+
 bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_max, inout HitRecord rec) {
     // if(length(ray.origin - sphere.origin) - sphere.radius < 0.01) {
     //     return false;
@@ -163,8 +167,8 @@ vec3 ray_color(inout Ray ray) {
 
             if(hitAnything) { // draw sphere
                 ray.origin = rec.point;
-                // ray.direction = normalize(rec.normal + random_in_unit_sphere(rec.point)); // lambertian reflection
-                ray.direction = random_on_hemisphere(rec.point, rec.normal); // random reflection
+                ray.direction = normalize(rec.normal + random_in_unit_sphere(rec.point)); // lambertian reflection
+                // ray.direction = random_on_hemisphere(rec.point, rec.normal); // random reflection
                 rayStrength *= 0.5;
             }
             else { // draw background
@@ -222,5 +226,8 @@ void main()
 
         pixelColor += vec4(ray_color(ray), 1.0);
     }
-    FragColor = clamp(pixelColor / float(samples_per_pixel), 0.0, 1.0);
+    pixelColor = pixelColor / float(samples_per_pixel);
+    linear_to_gamma_space(pixelColor);
+
+    FragColor = clamp(pixelColor, 0.0, 1.0);
 }
