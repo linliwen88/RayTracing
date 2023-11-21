@@ -137,7 +137,7 @@ private:
         
         horizontal = viewportWidth * Right;
         vertical = viewportHeight * Up;
-        lowerLeftCorner = Position - ((viewportWidth / 2.0f) * Right) - ((viewportHeight / 2.0f) * Up) + 2.0f * Front;
+        lowerLeftCorner = Position - ((viewportWidth / 2.0f) * Right) - ((viewportHeight / 2.0f) * Up) + 3.0f * Front;
     }
 };
 #endif

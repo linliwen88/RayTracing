@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGLPractice", "RayTracin
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RayTraceShpere", "RayTraceShpere\RayTraceShpere.vcxproj", "{4BC3DE15-679B-4240-BA6D-5484D18B2D66}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RayTrace_CPU", "RayTrace_CPU\RayTrace_CPU.vcxproj", "{249FDB85-CBBC-42F8-89F0-8946675DF822}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{4BC3DE15-679B-4240-BA6D-5484D18B2D66}.Release|x64.Build.0 = Release|x64
 		{4BC3DE15-679B-4240-BA6D-5484D18B2D66}.Release|x86.ActiveCfg = Release|Win32
 		{4BC3DE15-679B-4240-BA6D-5484D18B2D66}.Release|x86.Build.0 = Release|Win32
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Debug|x64.ActiveCfg = Debug|x64
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Debug|x64.Build.0 = Debug|x64
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Debug|x86.ActiveCfg = Debug|Win32
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Debug|x86.Build.0 = Debug|Win32
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Release|x64.ActiveCfg = Release|x64
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Release|x64.Build.0 = Release|x64
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Release|x86.ActiveCfg = Release|Win32
+		{249FDB85-CBBC-42F8-89F0-8946675DF822}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
