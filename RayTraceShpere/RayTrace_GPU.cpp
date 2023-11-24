@@ -10,17 +10,16 @@
 #include "stb_image.h"
 #include <vector>
 
-#include "RenderAttributes.h"
 #include "Utilities.h"
+
+#include "App.h"
 #include "Shader.h"
-#include "Camera.h"
 #include "Sphere.h"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
-
+// void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+// void mouse_callback(GLFWwindow * window, double xpos, double ypos);
+// void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+// void processInput(rayTracerApp* window);
 
 // traingle vertices in clip space
 float vertices[] = {
@@ -33,11 +32,6 @@ float vertices[] = {
     1.0f, 1.0f, 0.0f // top right
 };
 
-// camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
 
 // movement speed
 float deltaTime = 0.0f; // time between current frame and last frame
@@ -51,57 +45,40 @@ std::vector<Sphere* > world;
 
 int main()
 {
-    // Intialize and configure glfw
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //// Intialize and configure glfw
+    //glfwInit();
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-    // glfw window creation
-    GLFWwindow* window = glfwCreateWindow((int)SCR_WIDTH, (int)SCR_HEIGHT, "Ray Trace GPU", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
+    //// glfw window creation
+    //GLFWwindow* window = glfwCreateWindow((int)SCR_WIDTH, (int)SCR_HEIGHT, "Ray Trace GPU", NULL, NULL);
+    //if (window == NULL)
+    //{
+    //    std::cout << "Failed to create GLFW window" << std::endl;
+    //    glfwTerminate();
+    //    return -1;
+    //}
+    //glfwMakeContextCurrent(window);
 
 
-    // glad: load all OpenGL function pointers
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
+    //// glad: load all OpenGL function pointers
+    //if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    //{
+    //    std::cout << "Failed to initialize GLAD" << std::endl;
+    //    return -1;
+    //}
 
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    //glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    //glfwSetCursorPosCallback(window, mouse_callback);
+    //glfwSetScrollCallback(window, scroll_callback);
 
-    std::cout << "Hello World!\n";
+    App* myRayTracer = new App();
 
-    // bind vertex array object
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    // vertex buffer objectsa
-    unsigned int VBO;
-    glGenBuffers(1, &VBO); // generating buffer ID
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // set vertex attribute pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // shaders
-    Shader rayTraceShader("shaders/vshader.glsl", "shaders/fshader.glsl");
-    rayTraceShader.use();
+    
 
     // add hittable spheres into ray tracing world
     Sphere sphere_1(glm::vec3(0.0f, 0.0f, -1.0f), 0.5f);
@@ -114,7 +91,7 @@ int main()
 
     // render loop
     glEnable(GL_DEPTH_TEST);
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(myRayTracer->window))
     {
 
         // per-frame logic
@@ -123,7 +100,7 @@ int main()
         lastFrame = currentFrame;
 
         // input
-        processInput(window);
+        // processInput(myRayTracer);
 
         // rendering commands
         glClearColor(0.3f, 0.4f, 0.4f, 1.0f);
@@ -132,7 +109,7 @@ int main()
         glBindVertexArray(VAO);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 view = myRayTracer->cam->GetViewMatrix();
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
         rayTraceShader.setMat4("view", view);
@@ -145,10 +122,10 @@ int main()
         rayTraceShader.setFloat("screenWidth", SCR_WIDTH);
         rayTraceShader.setFloat("screenHeight", SCR_HEIGHT);
 
-        rayTraceShader.setVec3("cameraPos", camera.Position);
-        rayTraceShader.setVec3("horizontal", camera.horizontal);
-        rayTraceShader.setVec3("vertical", camera.vertical);
-        rayTraceShader.setVec3("lowerLeftCorner", camera.lowerLeftCorner);
+        rayTraceShader.setVec3("cameraPos", myRayTracer->cam->Position);
+        rayTraceShader.setVec3("horizontal", myRayTracer->cam->horizontal);
+        rayTraceShader.setVec3("vertical", myRayTracer->cam->vertical);
+        rayTraceShader.setVec3("lowerLeftCorner", myRayTracer->cam->lowerLeftCorner);
 
         rayTraceShader.setInt("hittableCount", world.size());
         rayTraceShader.setWorld("sphere", world);
@@ -160,7 +137,7 @@ int main()
 
         // check all events and swap the buffers
         glfwPollEvents();
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(myRayTracer->window);
     }
 
     glfwTerminate();
@@ -168,73 +145,73 @@ int main()
     return 0;
 }
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
-
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && antiAliasUp) {
-        ANTI_ALIAS = !ANTI_ALIAS;
-        std::cout << "ANTI_ALIAS: " << ANTI_ALIAS << std::endl;
-        antiAliasUp = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-        antiAliasUp = true;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && shadeModeUp) {
-        SHADING_MODE = (SHADING_MODE + 1) % 2;
-        std::cout << "SHADING_MODE: " << SHADING_MODE << std::endl;
-        shadeModeUp = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE) {
-        shadeModeUp = true;
-    }
-
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-}
+//void processInput(rayTracerApp* app)
+//{
+//    if (glfwGetKey(app->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+//        glfwSetWindowShouldClose(app->window, true);
+//
+//    if (glfwGetKey(app->window, GLFW_KEY_SPACE) == GLFW_PRESS && antiAliasUp) {
+//        ANTI_ALIAS = !ANTI_ALIAS;
+//        std::cout << "ANTI_ALIAS: " << ANTI_ALIAS << std::endl;
+//        antiAliasUp = false;
+//    }
+//    if (glfwGetKey(app->window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+//        antiAliasUp = true;
+//    }
+//
+//    if (glfwGetKey(app->window, GLFW_KEY_M) == GLFW_PRESS && shadeModeUp) {
+//        SHADING_MODE = (SHADING_MODE + 1) % 2;
+//        std::cout << "SHADING_MODE: " << SHADING_MODE << std::endl;
+//        shadeModeUp = false;
+//    }
+//    if (glfwGetKey(app->window, GLFW_KEY_M) == GLFW_RELEASE) {
+//        shadeModeUp = true;
+//    }
+//
+//
+//    if (glfwGetKey(app->window, GLFW_KEY_W) == GLFW_PRESS)
+//        app->cam->ProcessKeyboard(FORWARD, deltaTime);
+//    if (glfwGetKey(app->window, GLFW_KEY_S) == GLFW_PRESS)
+//        app->cam->ProcessKeyboard(BACKWARD, deltaTime);
+//    if (glfwGetKey(app->window, GLFW_KEY_A) == GLFW_PRESS)
+//        app->cam->ProcessKeyboard(LEFT, deltaTime);
+//    if (glfwGetKey(app->window, GLFW_KEY_D) == GLFW_PRESS)
+//        app->cam->ProcessKeyboard(RIGHT, deltaTime);
+//}
 
 
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}
+//void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+//{
+//    glViewport(0, 0, width, height);
+//}
+//
+//
+//// glfw: whenever the mouse moves, this callback is called
+//// -------------------------------------------------------
+//void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+//{
+//    float xpos = static_cast<float>(xposIn);
+//    float ypos = static_cast<float>(yposIn);
+//
+//    if (firstMouse)
+//    {
+//        lastX = xpos;
+//        lastY = ypos;
+//        firstMouse = false;
+//    }
+//
+//    float xoffset = xpos - lastX;
+//    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+//
+//    lastX = xpos;
+//    lastY = ypos;
+//
+//    camera.ProcessMouseMovement(xoffset, yoffset);
+//}
+//
+//// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+//// ----------------------------------------------------------------------
+//void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+//{
+//    camera.ProcessMouseScroll(static_cast<float>(yoffset));
+//}

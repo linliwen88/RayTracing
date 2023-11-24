@@ -1,12 +1,12 @@
 #pragma once
-#ifndef CAMERA_H
-#define CAMERA_H
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
+
+#include "RenderSetting.h"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -25,7 +25,7 @@ const float ZOOM = 45.0f;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Camera
+class camera
 {
 public:
     // camera Attributes
@@ -43,15 +43,18 @@ public:
     float Zoom;
 
     // viewport attributes
-    float viewportHeight = 2.0;
-    float viewportWidth = ASPECT_RATIO * viewportHeight;
+    float viewportHeight;
+    float viewportWidth;
     glm::vec3 lowerLeftCorner;
     glm::vec3 horizontal;
     glm::vec3 vertical;
 
     // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
+        viewportHeight = 2.0;
+        viewportWidth = ASPECT_RATIO * viewportHeight;
+
         Position = position;
         WorldUp = up;
         Yaw = yaw;
@@ -59,7 +62,7 @@ public:
         updateCameraVectors();
     }
     // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = glm::vec3(posX, posY, posZ);
         WorldUp = glm::vec3(upX, upY, upZ);
@@ -140,4 +143,3 @@ private:
         lowerLeftCorner = Position - ((viewportWidth / 2.0f) * Right) - ((viewportHeight / 2.0f) * Up) + 3.0f * Front;
     }
 };
-#endif
