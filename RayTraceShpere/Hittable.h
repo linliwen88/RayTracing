@@ -1,5 +1,7 @@
-class Hittable {
+#pragma once
+#include <glm/glm.hpp>
+
+class hittable {
 public:
-	Hittable();
-	virtual ~Hittable();
+	virtual ~hittable() = default;
 };

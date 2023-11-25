@@ -1,6 +1,6 @@
-#include "Shader.h"
+#include "shader.h"
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+shader::shader(const char* vertexPath, const char* fragmentPath)
 {
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
@@ -55,22 +55,19 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     glDeleteShader(fragment);
 }
 
-void Shader::setWorld(const std::string& name, std::vector<Sphere* >& world) const
+void shader::setWorld(const std::string& name, std::vector<std::shared_ptr<hittable>>& world) const
 {
     float radiuses[100];
     glm::vec3 origins[100];
     for (int i = 0; i < world.size(); i++) {
-        origins[i] = world[i]->Origin;
-        radiuses[i] = world[i]->Radius;
-        // origins[3 * i] = world[i]->Origin.x;
-        // origins[(3 * i) + 1] = world[i]->Origin.y;
-        // origins[(3 * i) + 2] = world[i]->Origin.z;
+        origins[i] = std::static_pointer_cast<sphere>(world[i])->Origin;
+        radiuses[i] = std::static_pointer_cast<sphere>(world[i])->Radius;
     }
     glUniform1fv(glGetUniformLocation(ID, (name + "Radiuses").c_str()), 100, radiuses);
     glUniform3fv(glGetUniformLocation(ID, (name + "Origins").c_str()), 100, glm::value_ptr(origins[0]));
 }
 
-void Shader::checkCompileErrors(unsigned int shader, std::string type)
+void shader::checkCompileErrors(unsigned int shader, std::string type)
 {
     int success;
     char infoLog[1024];

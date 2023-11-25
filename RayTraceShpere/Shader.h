@@ -11,16 +11,17 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <memory>
 #include <vector>
 
-#include "Sphere.h"
+#include "sphere.h"
 
-class Shader
+class shader
 {
 public:
     unsigned int ID;
     // constructor generates the shader on the fly
-    Shader(const char* vertexPath, const char* fragmentPath);
+    shader(const char* vertexPath, const char* fragmentPath);
 
     // activate the shader
     inline void use() const
@@ -54,7 +55,7 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
-    void setWorld(const std::string& name, std::vector<Sphere*>& world) const;
+    void setWorld(const std::string& name, std::vector<std::shared_ptr<hittable>>& world) const;
 
 
 
