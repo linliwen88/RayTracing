@@ -2,25 +2,39 @@
 
 App::App()
 {
-    this->set_up_glfw();
-    this->set_up_opengl();
-    // this->set_up_camera();
+    set_up_glfw();
+    set_up_opengl();
+    set_up_imgui();
 
     world.clear();
 }
 
 App::~App()
 {
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
     glfwTerminate();
+
     delete cam;
     delete rayTraceShader;
 }
 
 void App::run()
 {
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
     // render loop
     while (!glfwWindowShouldClose(window))
     {
+        // poll the events
+        glfwPollEvents();
+
         // per-frame logic
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -28,6 +42,71 @@ void App::run()
 
         // input
         processInput(window);
+
+        // ImGui
+        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        if (show_demo_window)
+            ImGui::ShowDemoWindow(&show_demo_window);
+
+        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+            ImGui::Checkbox("Another Window", &show_another_window);
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::Spacing();
+            ImGui::Checkbox("Anti-Alias", &anti_alias);
+
+            static ImGuiComboFlags flags = 0;
+            const char* items[] = { "Normal", "Lighting" };
+            // shading_mode = 0; // Here we store our selection data as an index.
+            const char* combo_preview_value = items[shading_mode];  // Pass in the preview value visible before opening the combo (it could be anything)
+            if (ImGui::BeginCombo("shading mode", combo_preview_value, flags))
+            {
+                for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+                {
+                    const bool is_selected = (shading_mode == n);
+                    if (ImGui::Selectable(items[n], is_selected))
+                        shading_mode = n;
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::End();
+        }
+
+        // 3. Show another simple window.
+        if (show_another_window)
+        {
+            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            if (ImGui::Button("Close Me"))
+                show_another_window = false;
+            ImGui::End();
+        }
 
         // rendering commands
         glClearColor(0.3f, 0.4f, 0.4f, 1.0f);
@@ -37,39 +116,41 @@ void App::run()
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glm::mat4 view = cam->GetViewMatrix();
-        glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
         rayTraceShader->setMat4("view", view);
         rayTraceShader->setMat4("projection", projection);
 
-
-        rayTraceShader->setInt("SHADING_MODE", SHADING_MODE);
-        rayTraceShader->setBool("ANTI_ALIAS", ANTI_ALIAS);
-        rayTraceShader->setInt("samples_per_pixel", (ANTI_ALIAS) ? samples_per_pixel : 1);
+        rayTraceShader->setInt("SHADING_MODE", shading_mode);
+        rayTraceShader->setBool("ANTI_ALIAS", anti_alias);
+        rayTraceShader->setInt("samples_per_pixel", (anti_alias) ? samples_per_pixel : 1);
         rayTraceShader->setFloat("screenWidth", SCR_WIDTH);
-        rayTraceShader->setFloat("screenHeight", SCR_HEIGHT);
 
         rayTraceShader->setVec3("cameraPos", cam->Position);
         rayTraceShader->setVec3("horizontal", cam->horizontal);
         rayTraceShader->setVec3("vertical", cam->vertical);
         rayTraceShader->setVec3("lowerLeftCorner", cam->lowerLeftCorner);
 
-        rayTraceShader->setInt("hittableCount", world.size());
-        rayTraceShader->setWorld("sphere", world);
-        rayTraceShader->use();
         glDrawArrays(GL_TRIANGLES, 0, 6);
-
         glBindVertexArray(0);
 
-        // check all events and swap the buffers
-        glfwPollEvents();
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        // swap the buffers
         glfwSwapBuffers(window);
     }
 }
 
+void App::set_shader_uniform()
+{
+    rayTraceShader->setFloat("screenHeight", SCR_HEIGHT);
+
+    rayTraceShader->setInt("hittableCount", world.size());
+    rayTraceShader->setWorld("sphere", world);
+}
+
 void App::addObjectToWorld(shared_ptr<hittable> object)
 {
-    // std::cout << "Adding sphere radius: " << std::static_pointer_cast<sphere>(object)->Radius << std::endl;
     world.push_back(object);
 }
 
@@ -102,9 +183,26 @@ int App::set_up_glfw()
 
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetFramebufferSizeCallback(window, callback_framebuffer_size);
+    // glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, callback_scroll);
+}
+
+int App::set_up_imgui()
+{
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    // Setup Dear ImGui style
+    // ImGui::StyleColorsDark();
+    ImGui::StyleColorsLight();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    return 0;
 }
 
 void App::set_up_opengl()
@@ -137,6 +235,9 @@ void App::set_up_opengl()
     rayTraceShader = new shader("shaders/vshader.glsl", "shaders/fshader.glsl");
     rayTraceShader->use();
 
+    
+    // rayTraceShader->use();
+
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -146,8 +247,8 @@ void App::processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && antiAliasUp) {
-        ANTI_ALIAS = !ANTI_ALIAS;
-        std::cout << "ANTI_ALIAS: " << ANTI_ALIAS << std::endl;
+        anti_alias = !anti_alias;
+        // std::cout << "ANTI_ALIAS: " << anti_alias << std::endl;
         antiAliasUp = false;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
@@ -155,14 +256,15 @@ void App::processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && shadeModeUp) {
-        SHADING_MODE = (SHADING_MODE + 1) % 2;
-        std::cout << "SHADING_MODE: " << SHADING_MODE << std::endl;
+        shading_mode = ((shading_mode + 1) % 2);
+        // shading_mode = (shading_mode == 1) ? 2 : 1;
+        // std::cout << "SHADING_MODE: " << shading_mode << std::endl;
+
         shadeModeUp = false;
     }
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE) {
         shadeModeUp = true;
     }
-
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cam->ProcessKeyboard(FORWARD, deltaTime);
@@ -174,7 +276,7 @@ void App::processInput(GLFWwindow* window)
         cam->ProcessKeyboard(RIGHT, deltaTime);
 }
 
-void App::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void App::callback_framebuffer_size(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
@@ -182,7 +284,7 @@ void App::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void App::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+void App::callback_mouse(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
@@ -205,14 +307,17 @@ void App::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void App::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void App::callback_scroll(GLFWwindow* window, double xoffset, double yoffset)
 {
     cam->ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
+camera* App::cam        = new camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float   App::deltaTime  = 1.0f;
 float   App::lastFrame  = 1.0f;
 float   App::lastX      = SCR_WIDTH / 2.0f;
 float   App::lastY      = SCR_HEIGHT / 2.0f;
 bool    App::firstMouse = true;
-camera* App::cam = new camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+bool  App::anti_alias   = true;
+int   App::shading_mode = 1;

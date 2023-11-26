@@ -5,9 +5,10 @@
 class sphere : public hittable
 {
 public:
-	glm::vec3 Origin;
-	float Radius;
-
-	sphere(glm::vec3 origin, float radius) { Origin = origin; Radius = radius; }
+	sphere(glm::vec3 origin, float radius, int material) { Origin = origin; Radius = radius; Material = material; }
 	~sphere() override {}
+
+	int Material;
+	float Radius;
+	glm::vec3 Origin;
 };

@@ -6,8 +6,9 @@ uniform int SHADING_MODE; // 0: object normal; 1: diffuse material
 
 // world objects 
 uniform int hittableCount;
-uniform vec3 sphereOrigins[100];
+uniform vec3  sphereOrigins[100];
 uniform float sphereRadiuses[100];
+uniform int   sphereMaterials[100];
 
 // camera and viewport
 uniform bool ANTI_ALIAS;
@@ -24,6 +25,11 @@ int maxRayBounce = 15;
 vec3 lightBlue = vec3(0.5, 0.7, 1.0);
 
 vec3 white = vec3(1.0, 1.0, 1.0);
+
+// define materials
+const int metal      = 1;
+const int lambertian = 2;
+const int dielectric = 3;
 
 // data stuctures
 struct Ray {
@@ -42,6 +48,20 @@ struct Sphere {
     vec3 origin;
     float radius;
 };
+
+
+Ray scatter(in Ray r_in, int material_type) {
+    Ray scattered;
+    if(material_type == metal) {
+
+    }
+    else if(material_type == lambertian) {
+    }
+    else if(material_type == dielectric) {
+    }
+
+    return scattered;
+}
 
 // utility functions
 // TODO: better random functions
