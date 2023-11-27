@@ -17,9 +17,13 @@ uniform float screenWidth;
 uniform float screenHeight;
 
 uniform vec3 cameraPos;
-uniform vec3 horizontal;
-uniform vec3 vertical;
-uniform vec3 lowerLeftCorner;
+uniform vec3 viewport_u;
+uniform vec3 viewport_v;
+uniform vec3 viewport_lower_left;
+
+uniform vec3 pixel_delta_u;
+uniform vec3 pixel_delta_v;
+uniform vec3 pixel00_location;
 
 int maxRayBounce = 15;
 vec3 lightBlue = vec3(0.5, 0.7, 1.0);
@@ -64,7 +68,7 @@ Ray scatter(in Ray r_in, int material_type) {
 }
 
 // utility functions
-// TODO: better random functions
+// TODO: sample random texture for random numbers
 float rand(vec2 co, float min, float max){
     // return random float between [min, max]
     return fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453123) * (max - min) + min;
@@ -219,20 +223,20 @@ vec3 ray_color(inout Ray ray) {
 void get_ray(inout Ray ray) {
     float u = gl_FragCoord.x;
     float v = gl_FragCoord.y;
-    vec3 pixelCenter = lowerLeftCorner + ((u / screenWidth) * horizontal) + ((v / screenHeight) * vertical);
+    // vec3 pixel_center = viewport_lower_left + ((u / screenWidth) * viewport_u) + ((v / screenHeight) * viewport_v);
+    vec3 pixel_center = pixel00_location + (u * pixel_delta_u) + (v * pixel_delta_v);
 
     if(ANTI_ALIAS) {
         float px = -0.5 + rand(gl_FragCoord.xy, 0.0, 1.0);
         float py = -0.5 + rand(gl_FragCoord.xz, 0.0, 1.0);
-        vec3 pixel_delta_u = horizontal / screenWidth;
-        vec3 pixel_delta_v = vertical / screenHeight;
+        // vec3 pixel_delta_u = viewport_u / screenWidth;
+        // vec3 pixel_delta_v = viewport_v / screenHeight;
         
-        vec3 pixelSample = pixelCenter + (px * pixel_delta_u) + (py * pixel_delta_v);
-        ray = Ray(cameraPos, pixelSample - cameraPos);
-
+        vec3 pixel_sample = pixel_center + (px * pixel_delta_u) + (py * pixel_delta_v);
+        ray = Ray(cameraPos, pixel_sample - cameraPos);
     }
     else {
-        ray = Ray(cameraPos, pixelCenter - cameraPos);
+        ray = Ray(cameraPos, pixel_center - cameraPos);
     }    
 }
 

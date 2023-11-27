@@ -126,9 +126,13 @@ void App::run()
         rayTraceShader->setFloat("screenWidth", SCR_WIDTH);
 
         rayTraceShader->setVec3("cameraPos", cam->Position);
-        rayTraceShader->setVec3("horizontal", cam->horizontal);
-        rayTraceShader->setVec3("vertical", cam->vertical);
-        rayTraceShader->setVec3("lowerLeftCorner", cam->lowerLeftCorner);
+        // rayTraceShader->setVec3("viewport_u", cam->viewport_u);
+        // rayTraceShader->setVec3("viewport_v", cam->viewport_v);
+        // rayTraceShader->setVec3("viewport_lower_left", cam->viewport_lower_left);
+
+        rayTraceShader->setVec3("pixel_delta_u", cam->pixel_delta_u);
+        rayTraceShader->setVec3("pixel_delta_v", cam->pixel_delta_v);
+        rayTraceShader->setVec3("pixel00_location", cam->pixel00_location);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);

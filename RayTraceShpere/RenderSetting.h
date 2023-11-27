@@ -2,7 +2,7 @@
 
 // viewport attributes
 const float ASPECT_RATIO = 16.0 / 9.0;
-const float SCR_HEIGHT = 600.0f;
+const float SCR_HEIGHT = 600.f;
 const float SCR_WIDTH = ASPECT_RATIO * SCR_HEIGHT;
 
 

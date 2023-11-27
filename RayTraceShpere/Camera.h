@@ -41,17 +41,20 @@ public:
     float Zoom;
 
     // viewport attributes
-    float viewportHeight;
-    float viewportWidth;
-    glm::vec3 lowerLeftCorner;
-    glm::vec3 horizontal;
-    glm::vec3 vertical;
+    float viewport_height;
+    float viewport_width;
+    glm::vec3 viewport_lower_left;
+    glm::vec3 viewport_u;
+    glm::vec3 viewport_v;
+    glm::vec3 pixel_delta_u;
+    glm::vec3 pixel_delta_v;
+    glm::vec3 pixel00_location;
 
     // constructor with vectors
     camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
-        viewportHeight = 2.0;
-        viewportWidth = ASPECT_RATIO * viewportHeight;
+        viewport_height = 2.0;
+        viewport_width = ASPECT_RATIO * viewport_height;
 
         Position = position;
         WorldUp = up;
@@ -136,8 +139,12 @@ private:
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up = glm::normalize(glm::cross(Right, Front));
         
-        horizontal = viewportWidth * Right;
-        vertical = viewportHeight * Up;
-        lowerLeftCorner = Position - ((viewportWidth / 2.0f) * Right) - ((viewportHeight / 2.0f) * Up) + 3.0f * Front;
+        viewport_u = viewport_width * Right;
+        viewport_v = viewport_height * Up;
+        viewport_lower_left = Position - ((viewport_width / 2.0f) * Right) - ((viewport_height / 2.0f) * Up) + 3.0f * Front;
+
+        pixel_delta_u = viewport_u / SCR_WIDTH;
+        pixel_delta_v = viewport_v / SCR_HEIGHT;
+        pixel00_location = viewport_lower_left + 0.5f * (pixel_delta_u + pixel_delta_v);
     }
 };
