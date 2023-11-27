@@ -59,8 +59,8 @@ public:
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    void render(const hittable_list& world, const int start, const int end) {
-
+    void render(const hittable_list& world, const int start, const int end)
+    {
         for (int j = start; j < end; j++)
         {
             // std::clog << "\rScanlines remaining: " << end - j << " / " << end - start << std::flush;
@@ -121,7 +121,6 @@ private:
             {
                 return rec.mat->get_albedo();
             }
-
         }
 
         vec3 unit_direction = unit_vector(r.direction()); // [-1, 1]
