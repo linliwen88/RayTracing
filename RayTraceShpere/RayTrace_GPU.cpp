@@ -18,7 +18,7 @@ int main()
 
     // create materials
     auto material_center = std::make_shared<material>(lambertian, glm::vec3(0.1f, 0.2f, 0.5f));
-    auto material_right  = std::make_shared<material>(metal     , glm::vec3(0.8f, 0.6f, 0.2f));
+    auto material_right  = std::make_shared<material>(metal, glm::vec3(0.8f, 0.6f, 0.2f));
     auto material_left   = std::make_shared<material>(lambertian, glm::vec3(0.5f, 0.2f, 0.1f));
     auto material_ground = std::make_shared<material>(lambertian, glm::vec3(0.8f, 0.8f, 0.0f));
 

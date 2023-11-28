@@ -56,26 +56,11 @@ void App::run()
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
-            static float f = 0.0f;
-            static int counter = 0;
+            // Create a window called "Render setting" and append into it.
+            ImGui::Begin("Render setting");
 
-            ImGui::Begin("Render setting");                          // Create a window called "Hello, world!" and append into it.
-
-            //ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            //ImGui::Checkbox("Another Window", &show_another_window);
-
-            //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            //if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            //    counter++;
-            //ImGui::SameLine();
-            //ImGui::Text("counter = %d", counter);
-
-            // ImGui::Spacing();
             static ImGuiComboFlags flags = 0;
             const char* items[] = { "Normal", "Lighting" };
-            // shading_mode = 0; // Here we store our selection data as an index.
             const char* combo_preview_value = items[shading_mode];  // Pass in the preview value visible before opening the combo (it could be anything)
             if (ImGui::BeginCombo("shading mode", combo_preview_value, flags))
             {
@@ -93,7 +78,9 @@ void App::run()
             }
 
             // ImGui::Text("");               // Display some text (you can use a format strings too)
-            ImGui::SliderInt("samples per pixel", &samples_per_pixel, 1, 100);            // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::SliderInt("samples per pixel", &samples_per_pixel, 1, 30);     // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::SliderInt("max ray bounce", &maxRayBounce, 1, 30);            // Edit 1 float using a slider from 0.0f to 1.0f
+            
             ImGui::Checkbox("anti-alias", &anti_alias);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
@@ -122,16 +109,17 @@ void App::run()
         rayTraceShader->setMat4("view", view);
         rayTraceShader->setMat4("projection", projection);
 
+        rayTraceShader->setInt("maxRayBounce", maxRayBounce);
         rayTraceShader->setInt("SHADING_MODE", shading_mode);
         rayTraceShader->setBool("ANTI_ALIAS", anti_alias);
         rayTraceShader->setInt("samples_per_pixel", (anti_alias) ? samples_per_pixel : 1);
         rayTraceShader->setFloat("screenWidth", SCR_WIDTH);
-
+        
         rayTraceShader->setVec3("cameraPos", cam->Position);
 
-        rayTraceShader->setVec3("pixel_delta_u", cam->pixel_delta_u);
-        rayTraceShader->setVec3("pixel_delta_v", cam->pixel_delta_v);
-        rayTraceShader->setVec3("pixel00_location", cam->pixel00_location);
+        rayTraceShader->setVec3("viewport_u", cam->viewport_u);
+        rayTraceShader->setVec3("viewport_v", cam->viewport_v);
+        rayTraceShader->setVec3("viewport_lower_left", cam->viewport_lower_left);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
@@ -325,3 +313,4 @@ bool    App::firstMouse = true;
 int   App::samples_per_pixel = 10;
 bool  App::anti_alias   = true;
 int   App::shading_mode = 1;
+int   App::maxRayBounce = 15;

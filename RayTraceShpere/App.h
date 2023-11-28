@@ -53,6 +53,7 @@ private:
 
 	// render atibutes
 	static bool anti_alias;
+	static int maxRayBounce;
 	static int shading_mode;
 	static int samples_per_pixel;
 

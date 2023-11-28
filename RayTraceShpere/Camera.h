@@ -46,9 +46,6 @@ public:
     glm::vec3 viewport_lower_left;
     glm::vec3 viewport_u;
     glm::vec3 viewport_v;
-    glm::vec3 pixel_delta_u;
-    glm::vec3 pixel_delta_v;
-    glm::vec3 pixel00_location;
 
     // constructor with vectors
     camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -142,9 +139,5 @@ private:
         viewport_u = viewport_width * Right;
         viewport_v = viewport_height * Up;
         viewport_lower_left = Position - ((viewport_width / 2.0f) * Right) - ((viewport_height / 2.0f) * Up) + 3.0f * Front;
-
-        pixel_delta_u = viewport_u / SCR_WIDTH;
-        pixel_delta_v = viewport_v / SCR_HEIGHT;
-        pixel00_location = viewport_lower_left + 0.5f * (pixel_delta_u + pixel_delta_v);
     }
 };
