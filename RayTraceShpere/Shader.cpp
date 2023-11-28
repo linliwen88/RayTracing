@@ -59,16 +59,19 @@ void shader::setWorld(const std::string& name, std::vector<std::shared_ptr<hitta
 {
     float radiuses[100];
     glm::vec3 origins[100];
-    int materials[100];
+    int material_types[100];
+    glm::vec3 material_albedo[100];
 
     for (int i = 0; i < world.size(); i++) {
         origins[i] = std::static_pointer_cast<sphere>(world[i])->Origin;
         radiuses[i] = std::static_pointer_cast<sphere>(world[i])->Radius;
-        materials[i] = std::static_pointer_cast<sphere>(world[i])->Material;
+        material_types[i] = std::static_pointer_cast<sphere>(world[i])->Material->type;
+        material_albedo[i] = std::static_pointer_cast<sphere>(world[i])->Material->albedo;
     }
     glUniform1fv(glGetUniformLocation(ID, (name + "Radiuses").c_str()), 100, radiuses);
     glUniform3fv(glGetUniformLocation(ID, (name + "Origins").c_str()), 100, glm::value_ptr(origins[0]));
-    glUniform1iv(glGetUniformLocation(ID, (name + "Materials").c_str()), 100, materials);
+    glUniform1iv(glGetUniformLocation(ID, (name + "MaterialTypes").c_str()), 100, material_types);
+    glUniform3fv(glGetUniformLocation(ID, (name + "MaterialAlbedos").c_str()), 100, glm::value_ptr(material_albedo[0]));
 }
 
 void shader::checkCompileErrors(unsigned int shader, std::string type)

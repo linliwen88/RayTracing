@@ -1,14 +1,17 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <memory>
+
 #include "hittable.h"
+#include "material.h"
 
 class sphere : public hittable
 {
 public:
-	sphere(glm::vec3 origin, float radius, int material) { Origin = origin; Radius = radius; Material = material; }
+	sphere(glm::vec3 origin, float radius, std::shared_ptr<material> mat) { Origin = origin; Radius = radius; Material = mat; }
 	~sphere() override {}
 
-	int Material;
+	std::shared_ptr<material> Material;
 	float Radius;
 	glm::vec3 Origin;
 };

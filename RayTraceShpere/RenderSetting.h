@@ -7,7 +7,7 @@ const float SCR_WIDTH = ASPECT_RATIO * SCR_HEIGHT;
 
 
 // samples per pixel
-const int samples_per_pixel = 100;
+// const int samples_per_pixel = 10;
 
 // anti-aliasing
 // inline bool ANTI_ALIAS = true;

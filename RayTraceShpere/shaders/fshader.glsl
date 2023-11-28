@@ -2,13 +2,14 @@
 out vec4 FragColor;
 
 // shading mode
-uniform int SHADING_MODE; // 0: object normal; 1: diffuse material
+uniform int SHADING_MODE; // 0: object normal; 1: ray tracing lighting
 
 // world objects 
 uniform int hittableCount;
 uniform vec3  sphereOrigins[100];
 uniform float sphereRadiuses[100];
-uniform int   sphereMaterials[100];
+uniform int   sphereMaterialTypes[100]; // 0: metal; 1: lambertial; 2: dielectric
+uniform vec3  sphereMaterialAlbedos[100];
 
 // camera and viewport
 uniform bool ANTI_ALIAS;
@@ -17,9 +18,6 @@ uniform float screenWidth;
 uniform float screenHeight;
 
 uniform vec3 cameraPos;
-uniform vec3 viewport_u;
-uniform vec3 viewport_v;
-uniform vec3 viewport_lower_left;
 
 uniform vec3 pixel_delta_u;
 uniform vec3 pixel_delta_v;
@@ -31,9 +29,9 @@ vec3 lightBlue = vec3(0.5, 0.7, 1.0);
 vec3 white = vec3(1.0, 1.0, 1.0);
 
 // define materials
-const int metal      = 1;
-const int lambertian = 2;
-const int dielectric = 3;
+const int metal      = 0;
+const int lambertian = 1;
+const int dielectric = 2;
 
 // data stuctures
 struct Ray {
@@ -41,31 +39,28 @@ struct Ray {
     vec3 direction;
 };
 
+struct Material {
+     int type;
+     vec3 albedo;
+};
+
 struct HitRecord {
     vec3 point;
     float t;
     vec3 normal;
     bool isFrontFace;
+    Material mat;
 };
 
 struct Sphere {
     vec3 origin;
     float radius;
+    Material mat;
+    // int materialType;
+    // vec3 materialAlbedo;
 };
 
 
-Ray scatter(in Ray r_in, int material_type) {
-    Ray scattered;
-    if(material_type == metal) {
-
-    }
-    else if(material_type == lambertian) {
-    }
-    else if(material_type == dielectric) {
-    }
-
-    return scattered;
-}
 
 // utility functions
 // TODO: sample random texture for random numbers
@@ -98,8 +93,27 @@ vec3 random_on_hemisphere(in vec3 seed, in vec3 normal) {
     return p;
 }
 
-void linear_to_gamma_space(inout vec4 linear_component) {
+void linear_to_gamma_space(inout vec3 linear_component) {
     linear_component = sqrt(linear_component);
+}
+
+
+void scatter(inout Ray ray, in HitRecord rec) {
+    // Ray scattered;
+
+    if(rec.mat.type == metal) {
+        vec3 reflected = reflect(ray.direction, rec.normal);
+        ray = Ray(rec.point, reflected + random_in_unit_sphere(rec.normal));
+    }
+    else if(rec.mat.type == lambertian) {
+        vec3 scattered_direction = rec.normal + random_in_unit_sphere(rec.normal);
+        scattered_direction = normalize(scattered_direction);
+
+        ray = Ray(rec.point, scattered_direction);
+    }
+    else if(rec.mat.type == dielectric) {
+
+    }
 }
 
 bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_max, inout HitRecord rec) {
@@ -132,13 +146,14 @@ bool sphere_hit(in Sphere sphere, inout Ray ray, in float t_min, inout float t_m
     vec3 outward_normal = (rec.point - sphere.origin) / sphere.radius;
     rec.isFrontFace = dot(ray.direction, outward_normal) < 0.0;
     rec.normal = rec.isFrontFace ? outward_normal : -outward_normal;
+    rec.mat = sphere.mat;
 
     return true;
 }
 
 // Bounce the ray and determine color by whether it hits object in the scene.
 vec3 ray_color(inout Ray ray) {
-    vec3 rayColor = vec3(0.0);
+    vec3 rayColor = vec3(1.0);
     HitRecord rec;
     float t_min = 0.1;
     float t_max = 1000.0;
@@ -148,7 +163,8 @@ vec3 ray_color(inout Ray ray) {
     if(SHADING_MODE == 0) { // show the object's normal
         for(int i = 0; i < hittableCount; i++) {
             HitRecord tmp_rec;
-            Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i]);
+            Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i], 
+                                   Material(sphereMaterialTypes[i], sphereMaterialAlbedos[i]));
 
             if(sphere_hit(sphere, ray, t_min, closest_so_far, tmp_rec)) {
                 closest_so_far = tmp_rec.t;
@@ -166,7 +182,7 @@ vec3 ray_color(inout Ray ray) {
             rayColor = (1.0 - t) * white + t * lightBlue;
         }
     }
-    else if(SHADING_MODE == 1) { // diffuse material
+    else if(SHADING_MODE == 1) { // ray tracing
         // use iteration for ray tracing without recursion in shader
         bool bounceEnd = false;
         int bounceCount = 0;
@@ -180,7 +196,9 @@ vec3 ray_color(inout Ray ray) {
 
             for(int i = 0; i < hittableCount; i++) { // check all objects for ray hit
                 HitRecord tmp_rec;
-                Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i]);
+                // Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i], sphereMaterialsTypes[i], sphereMaterialAlbedos[i]);
+                Sphere sphere = Sphere(sphereOrigins[i], sphereRadiuses[i], 
+                                       Material(sphereMaterialTypes[i], sphereMaterialAlbedos[i]));
 
                 if(sphere_hit(sphere, ray, t_min, closest_so_far, tmp_rec)) {
                     closest_so_far = tmp_rec.t;
@@ -191,20 +209,23 @@ vec3 ray_color(inout Ray ray) {
 
             if(hitAnything) { // draw sphere
                 ray.origin = rec.point;
-                ray.direction = normalize(rec.normal + random_in_unit_sphere(rec.point)); // lambertian reflection
+                // ray.direction = normalize(rec.normal + random_in_unit_sphere(rec.point)); // lambertian reflection
                 // ray.direction = random_on_hemisphere(rec.point, rec.normal); // random reflection
-                rayStrength *= 0.5;
+                scatter(ray, rec);
+                rayColor = rayColor * rec.mat.albedo;
+
+                // rayStrength *= 0.5;
             }
             else { // draw background
                 bounceEnd = true;
                 vec3 unitDirection = normalize(ray.direction);
                 float t = (unitDirection.y + 1.0) * 0.5;
 
-                if(bounceCount == 0) {
+                if(bounceCount == 0) { // ray directly hits the background
                     rayColor = (1.0 - t) * white + t * lightBlue;
                     break;
                 }
-                rayColor = rayStrength * ((1.0 - t) * white + t * lightBlue);
+                rayColor = rayColor * ((1.0 - t) * white + t * lightBlue);
             }
 
             // clear hit information for next iteration
@@ -223,14 +244,11 @@ vec3 ray_color(inout Ray ray) {
 void get_ray(inout Ray ray) {
     float u = gl_FragCoord.x;
     float v = gl_FragCoord.y;
-    // vec3 pixel_center = viewport_lower_left + ((u / screenWidth) * viewport_u) + ((v / screenHeight) * viewport_v);
     vec3 pixel_center = pixel00_location + (u * pixel_delta_u) + (v * pixel_delta_v);
 
     if(ANTI_ALIAS) {
         float px = -0.5 + rand(gl_FragCoord.xy, 0.0, 1.0);
         float py = -0.5 + rand(gl_FragCoord.xz, 0.0, 1.0);
-        // vec3 pixel_delta_u = viewport_u / screenWidth;
-        // vec3 pixel_delta_v = viewport_v / screenHeight;
         
         vec3 pixel_sample = pixel_center + (px * pixel_delta_u) + (py * pixel_delta_v);
         ray = Ray(cameraPos, pixel_sample - cameraPos);
@@ -243,15 +261,16 @@ void get_ray(inout Ray ray) {
 
 void main()
 {
-    vec4 pixelColor = vec4(0.0);
+    vec3 pixelColor = vec3(0.0);
     for(int s = 0; s < samples_per_pixel; s++) {
         Ray ray;
         get_ray(ray);
 
-        pixelColor += vec4(ray_color(ray), 1.0);
+        // pixelColor += vec4(ray_color(ray), 1.0);
+        pixelColor += ray_color(ray);
     }
     pixelColor = pixelColor / float(samples_per_pixel);
     linear_to_gamma_space(pixelColor);
 
-    FragColor = clamp(pixelColor, 0.0, 1.0);
+    FragColor = vec4(clamp(pixelColor, 0.0, 1.0), 1.0);
 }

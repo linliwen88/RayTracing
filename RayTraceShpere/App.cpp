@@ -59,23 +59,20 @@ void App::run()
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Render setting");                          // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+            //ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+            //ImGui::Checkbox("Another Window", &show_another_window);
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
+            //if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            //    counter++;
+            //ImGui::SameLine();
+            //ImGui::Text("counter = %d", counter);
 
-            ImGui::Spacing();
-            ImGui::Checkbox("Anti-Alias", &anti_alias);
-
+            // ImGui::Spacing();
             static ImGuiComboFlags flags = 0;
             const char* items[] = { "Normal", "Lighting" };
             // shading_mode = 0; // Here we store our selection data as an index.
@@ -94,6 +91,11 @@ void App::run()
                 }
                 ImGui::EndCombo();
             }
+
+            // ImGui::Text("");               // Display some text (you can use a format strings too)
+            ImGui::SliderInt("samples per pixel", &samples_per_pixel, 1, 100);            // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::Checkbox("anti-alias", &anti_alias);
+
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
         }
@@ -126,9 +128,6 @@ void App::run()
         rayTraceShader->setFloat("screenWidth", SCR_WIDTH);
 
         rayTraceShader->setVec3("cameraPos", cam->Position);
-        // rayTraceShader->setVec3("viewport_u", cam->viewport_u);
-        // rayTraceShader->setVec3("viewport_v", cam->viewport_v);
-        // rayTraceShader->setVec3("viewport_lower_left", cam->viewport_lower_left);
 
         rayTraceShader->setVec3("pixel_delta_u", cam->pixel_delta_u);
         rayTraceShader->setVec3("pixel_delta_v", cam->pixel_delta_v);
@@ -323,5 +322,6 @@ float   App::lastX      = SCR_WIDTH / 2.0f;
 float   App::lastY      = SCR_HEIGHT / 2.0f;
 bool    App::firstMouse = true;
 
+int   App::samples_per_pixel = 10;
 bool  App::anti_alias   = true;
 int   App::shading_mode = 1;

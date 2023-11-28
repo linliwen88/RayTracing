@@ -54,6 +54,7 @@ private:
 	// render atibutes
 	static bool anti_alias;
 	static int shading_mode;
+	static int samples_per_pixel;
 
 	// movement speed
 	static float deltaTime; // time between current frame and last frame
