@@ -137,7 +137,6 @@ private:
     {
         point3 pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
         point3 pixel_sample = pixel_center + pixel_sample_square();
-        point3 pixel_sample = pixel_center + pixel_sample_square();
 
         point3 ray_origin = camera_center;
         vec3 ray_direction = pixel_sample - ray_origin;

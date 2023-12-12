@@ -1,10 +1,13 @@
 #include "App.h"
+#include "Helper.h"
 
 App::App()
 {
     set_up_glfw();
     set_up_opengl();
     set_up_imgui();
+
+    generate_random_texture();
 
     world.clear();
 }
@@ -60,7 +63,7 @@ void App::run()
             ImGui::Begin("Render setting");
 
             static ImGuiComboFlags flags = 0;
-            const char* items[] = { "Normal", "Lighting" };
+            const char* items[] = { "Normal", "Lighting", "Random"};
             const char* combo_preview_value = items[shading_mode];  // Pass in the preview value visible before opening the combo (it could be anything)
             if (ImGui::BeginCombo("shading mode", combo_preview_value, flags))
             {
@@ -200,13 +203,14 @@ void App::set_up_opengl()
 {
     // traingle vertices in clip space
     float vertices[] = {
-        -1.0f, -1.0f, 0.0f, // bottom left
-        1.0f, -1.0f, 0.0f, // bottom right
-        -1.0f, 1.0f, 0.0f,// top left
+        // position coord       // tex coord
+        -1.0f, -1.0f, 0.0f,     0.0f, 0.0f,       // bottom left
+         1.0f, -1.0f, 0.0f,     1.0f, 0.0f,       // bottom right
+        -1.0f,  1.0f, 0.0f,     0.0f, 1.0f,       // top left
 
-        -1.0f, 1.0f, 0.0f,// top left
-        1.0f, -1.0f, 0.0f, // bottom right
-        1.0f, 1.0f, 0.0f // top right
+        -1.0f,  1.0f, 0.0f,     0.0f, 1.0f,       // top left
+         1.0f, -1.0f, 0.0f,     1.0f, 0.0f,       // bottom right
+         1.0f,  1.0f, 0.0f,     1.0f, 1.0f        // top right
     };
 
     // bind vertex array object
@@ -219,17 +223,54 @@ void App::set_up_opengl()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // set vertex attribute pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // set texture coordinate attribute pointers
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // shaders
     rayTraceShader = new shader("shaders/vshader.glsl", "shaders/fshader.glsl");
     rayTraceShader->use();
 
-    
-    // rayTraceShader->use();
-
     glEnable(GL_DEPTH_TEST);
+}
+
+void App::generate_random_texture()
+{
+    glGenTextures(1, &random_texture);
+    glBindTexture(GL_TEXTURE_2D, random_texture);
+    
+    // set texture filtering operations
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // generate random texture data
+    const int width = 60;
+    const int height = 60;
+
+    GLubyte data[width][height][3] = {};
+
+    for (int i = 0; i < width; i++)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            data[i][j][0] = static_cast<GLubyte>(random_float(-1.0, 1.0) * 255.f);
+            data[i][j][1] = static_cast<GLubyte>(random_float(-1.0, 1.0) * 255.f);
+            data[i][j][2] = static_cast<GLubyte>(random_float(-1.0, 1.0) * 255.f);
+        }
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, random_texture);
+
+    rayTraceShader->setInt("randTexture", 0);
 }
 
 void App::processInput(GLFWwindow* window)
@@ -239,7 +280,6 @@ void App::processInput(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && antiAliasUp) {
         anti_alias = !anti_alias;
-        // std::cout << "ANTI_ALIAS: " << anti_alias << std::endl;
         antiAliasUp = false;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
@@ -247,9 +287,7 @@ void App::processInput(GLFWwindow* window)
     }
 
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && shadeModeUp) {
-        shading_mode = ((shading_mode + 1) % 2);
-        // shading_mode = (shading_mode == 1) ? 2 : 1;
-        // std::cout << "SHADING_MODE: " << shading_mode << std::endl;
+        shading_mode = ((shading_mode + 1) % 3);
 
         shadeModeUp = false;
     }

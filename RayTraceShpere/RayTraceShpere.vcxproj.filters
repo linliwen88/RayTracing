@@ -110,6 +110,9 @@
     <ClInclude Include="imgui\backends\imgui_impl_opengl3.h">
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fshader.glsl">

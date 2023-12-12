@@ -39,6 +39,7 @@ private:
 	int set_up_glfw();
 	int set_up_imgui();
 	void set_up_opengl();
+	void generate_random_texture();
 
 	// ImGui
 	bool show_demo_window = false;
@@ -50,6 +51,7 @@ private:
 	unsigned int VBO;
 	shader* rayTraceShader;
 	vector<shared_ptr<hittable>> world;
+	unsigned int random_texture;
 
 	// render atibutes
 	static bool anti_alias;

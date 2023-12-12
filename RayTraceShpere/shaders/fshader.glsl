@@ -1,10 +1,13 @@
 #version 330 core
 #define PI      3.1415926535
 
+in vec2 texCoord;
+uniform sampler2D randTexture;
+
 out vec4 FragColor;
 
 // shading mode
-uniform int SHADING_MODE; // 0: object normal; 1: ray tracing lighting
+uniform int SHADING_MODE; // 0: object normal; 1: ray tracing lighting; 2: random
 
 // world objects 
 uniform int hittableCount;
@@ -80,7 +83,9 @@ vec3 randVec3(vec3 seed) {
 }
 
 vec3 random_in_unit_sphere(in vec3 seed) {
-    vec3 p = randVec3(seed);
+    // vec3 p = randVec3(seed);
+    vec3 p = texture(randTexture, seed.xy).xyz;
+    normalize(p);
     return p;
 
 //    // supposed to reject random vector when length > 1.0, but random function is lowzy so not practical
@@ -249,15 +254,23 @@ void get_ray(inout Ray ray) {
 
 
 void main() {
-    vec3 pixelColor = vec3(0.0);
-    for(int s = 0; s < samples_per_pixel; s++) {
-        Ray ray;
-        get_ray(ray);
-
-        pixelColor += ray_color(ray);
+    if(SHADING_MODE == 2)
+    {
+        FragColor = vec4(texture(randTexture, texCoord).xyz, 1.0);
     }
-    pixelColor = pixelColor / float(samples_per_pixel);
-    linear_to_gamma_space(pixelColor);
+    else 
+    {
+        vec3 pixelColor = vec3(0.0);
+        for(int s = 0; s < samples_per_pixel; s++) {
+            Ray ray;
+            get_ray(ray);
 
-    FragColor = vec4(clamp(pixelColor, 0.0, 1.0), 1.0);
+            pixelColor += ray_color(ray);
+        }
+        pixelColor = pixelColor / float(samples_per_pixel);
+        linear_to_gamma_space(pixelColor);
+
+        FragColor = vec4(clamp(pixelColor, 0.0, 1.0), 1.0);
+    }
+    
 }
