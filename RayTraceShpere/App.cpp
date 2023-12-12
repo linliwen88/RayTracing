@@ -1,8 +1,27 @@
 #include "App.h"
 #include "Helper.h"
 
-App::App()
+camera* App::cam = new camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float App::deltaTime = 1.0f;
+float App::lastFrame = 1.0f;
+float App::lastX = 0.0f;
+float App::lastY = 0.0f;
+bool App::firstMouse = true;
+
+bool App::anti_alias = true;
+int App::shading_mode = 1;
+
+App::App(int _height, float _aspectRatio) : screenHeight(_height), aspectRatio(_aspectRatio)
 {
+    screenWidth = static_cast<int>(aspectRatio * screenHeight);
+    cam->SetAspectRatio(aspectRatio);
+
+    lastX = screenWidth / 2.0f;
+    lastY = screenHeight / 2.0f;
+
+    samples_per_pixel = 10;
+    maxRayBounce = 15;
+
     set_up_glfw();
     set_up_opengl();
     set_up_imgui();
@@ -108,7 +127,7 @@ void App::run()
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glm::mat4 view = cam->GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
         rayTraceShader->setMat4("view", view);
         rayTraceShader->setMat4("projection", projection);
 
@@ -116,7 +135,7 @@ void App::run()
         rayTraceShader->setInt("SHADING_MODE", shading_mode);
         rayTraceShader->setBool("ANTI_ALIAS", anti_alias);
         rayTraceShader->setInt("samples_per_pixel", (anti_alias) ? samples_per_pixel : 1);
-        rayTraceShader->setFloat("screenWidth", SCR_WIDTH);
+        rayTraceShader->setFloat("screenWidth", screenWidth);
         
         rayTraceShader->setVec3("cameraPos", cam->Position);
 
@@ -137,7 +156,7 @@ void App::run()
 
 void App::set_shader_uniform()
 {
-    rayTraceShader->setFloat("screenHeight", SCR_HEIGHT);
+    rayTraceShader->setFloat("screenHeight", screenHeight);
 
     rayTraceShader->setInt("hittableCount", world.size());
     rayTraceShader->setWorld("sphere", world);
@@ -158,7 +177,7 @@ int App::set_up_glfw()
 
 
     // glfw window creation
-    window = glfwCreateWindow((int)SCR_WIDTH, (int)SCR_HEIGHT, "Ray Trace GPU", NULL, NULL);
+    window = glfwCreateWindow(screenWidth, screenHeight, "Ray Trace GPU", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -175,7 +194,7 @@ int App::set_up_glfw()
         return -1;
     }
 
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glViewport(0, 0, screenWidth, screenHeight);
 
     glfwSetFramebufferSizeCallback(window, callback_framebuffer_size);
     // glfwSetCursorPosCallback(window, mouse_callback);
@@ -249,8 +268,8 @@ void App::generate_random_texture()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // generate random texture data
-    const int width = 60;
-    const int height = 60;
+    const int width = 50;
+    const int height = 50;
 
     GLubyte data[width][height][3] = {};
 
@@ -340,15 +359,3 @@ void App::callback_scroll(GLFWwindow* window, double xoffset, double yoffset)
 {
     cam->ProcessMouseScroll(static_cast<float>(yoffset));
 }
-
-camera* App::cam        = new camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float   App::deltaTime  = 1.0f;
-float   App::lastFrame  = 1.0f;
-float   App::lastX      = SCR_WIDTH / 2.0f;
-float   App::lastY      = SCR_HEIGHT / 2.0f;
-bool    App::firstMouse = true;
-
-int   App::samples_per_pixel = 10;
-bool  App::anti_alias   = true;
-int   App::shading_mode = 1;
-int   App::maxRayBounce = 15;

@@ -10,16 +10,22 @@
 
 int main()
 {
+
+    // viewport size
+    const float ASPECT_RATIO = 16.0 / 9.0;
+    const int SCR_HEIGHT = 600;
+
+    static App* myRayTracer = new App(SCR_HEIGHT, ASPECT_RATIO);
+
     const int metal = 0;
     const int lambertian = 1;
     const int dielectric = 2;
 
-    static App* myRayTracer = new App();
 
     // create materials
     auto material_center = std::make_shared<material>(lambertian, glm::vec3(0.1f, 0.2f, 0.5f));
     auto material_right  = std::make_shared<material>(metal, glm::vec3(0.8f, 0.6f, 0.2f));
-    auto material_left   = std::make_shared<material>(lambertian, glm::vec3(0.5f, 0.2f, 0.1f));
+    auto material_left   = std::make_shared<material>(metal, glm::vec3(0.5f, 0.2f, 0.1f));
     auto material_ground = std::make_shared<material>(lambertian, glm::vec3(0.8f, 0.8f, 0.0f));
 
     // add hittable spheres into world

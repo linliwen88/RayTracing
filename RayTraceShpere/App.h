@@ -13,18 +13,22 @@
 #include <memory>
 #include <iostream>
 
-#include "RenderSetting.h"
 #include "stb_image.h"
 #include "camera.h"
 #include "shader.h"
 #include "hittable.h"
+
+
+// keboard single press controls
+inline bool antiAliasUp = true;
+inline bool shadeModeUp = true;
 
 using std::vector;
 using std::shared_ptr;
 
 class App {
 public:
-	App();
+	App(int screenHeight, float aspectRatio);
 	~App();
 
 	void run();
@@ -53,11 +57,15 @@ private:
 	vector<shared_ptr<hittable>> world;
 	unsigned int random_texture;
 
+	int screenWidth;
+	int screenHeight;
+	float aspectRatio;
+
 	// render atibutes
 	static bool anti_alias;
-	static int maxRayBounce;
 	static int shading_mode;
-	static int samples_per_pixel;
+	int samples_per_pixel;
+	int maxRayBounce;
 
 	// movement speed
 	static float deltaTime; // time between current frame and last frame

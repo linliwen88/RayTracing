@@ -70,7 +70,6 @@ struct Sphere {
 
 
 // utility functions
-// TODO: sample random texture for random numbers
 float rand(vec2 co, float min, float max){
     // return random float between [min, max]
     return  fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453123) * (max - min) + min;
@@ -79,23 +78,27 @@ float rand(vec2 co, float min, float max){
 
 vec3 randVec3(vec3 seed) {
     return vec3(rand(seed.xy, -0.5, 0.5), rand(seed.yz, -0.5, 0.5), rand(seed.xz, -0.5, 0.5));
-    // return vec3(rand(seed.xy, 0.0, 1.0), rand(seed.yz, 0.0, 1.0), rand(seed.xz, 0.0, 1.0));
 }
 
-vec3 random_in_unit_sphere(in vec3 seed) {
-    // vec3 p = randVec3(seed);
-    vec3 p = texture(randTexture, seed.xy).xyz;
-    normalize(p);
-    return p;
+vec2 randSeed = texCoord;
 
-//    // supposed to reject random vector when length > 1.0, but random function is lowzy so not practical
-//    vec3 p;
-//    
-//    for(float i = 0.0f; i < 100.0f; i += 1.0f) {
-//        p = randvec3(seed + vec3(i));
-//        if(p.length() <= 2.0f) return p;
-//    }
+vec3 random_in_unit_sphere(in vec3 seed) {
+//    // reeturn any random vector, causes weird artifact
+//    vec3 p = texture(randTexture, randSeed).xyz;
+//    normalize(p);
+//    randSeed += seed.xy;
+//
 //    return p;
+
+    // reject when p.length() > 1.0
+    vec3 p;
+    for(float i = 0.0f; i < 100.0f; i += 1.0f)
+    {
+        p = texture(randTexture, randSeed).xyz;
+        randSeed += seed.xy;
+        if(p.length() <= 1.0f) return p;
+    }
+    return p;
 }
 
 vec3 random_on_hemisphere(in vec3 seed, in vec3 normal) {
@@ -111,16 +114,14 @@ void linear_to_gamma_space(inout vec3 linear_component) {
     linear_component = sqrt(linear_component);
 }
 
-
 void scatter(inout Ray ray, in HitRecord rec) {
 
     if(rec.mat.type == metal) {
         vec3 reflected = reflect(ray.direction, rec.normal);
-        // ray = Ray(rec.point, reflected);
-        ray = Ray(rec.point, reflected + random_in_unit_sphere(rec.normal));
+        ray = Ray(rec.point, reflected + random_on_hemisphere(rec.point, rec.normal));
     }
     else if(rec.mat.type == lambertian) {
-        vec3 scattered_direction = rec.normal + random_in_unit_sphere(rec.normal);
+        vec3 scattered_direction = rec.normal + random_on_hemisphere(rec.point, rec.normal);
         scattered_direction = normalize(scattered_direction);
 
         ray = Ray(rec.point, scattered_direction);
