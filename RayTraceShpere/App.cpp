@@ -1,7 +1,8 @@
 #include "App.h"
 #include "Helper.h"
 
-camera* App::cam = new camera(glm::vec3(0.0f, 0.0f, 3.0f));
+// camera* App::cam = new camera(glm::vec3(13.f, 2.f, 3.f));
+camera* App::cam = new camera(glm::vec3(0.f, 1.0f, 0.f));
 float App::deltaTime = 1.0f;
 float App::lastFrame = 1.0f;
 float App::lastX = 0.0f;

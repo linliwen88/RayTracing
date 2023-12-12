@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "Helper.h"
 
 shader::shader(const char* vertexPath, const char* fragmentPath)
 {
@@ -57,21 +58,27 @@ shader::shader(const char* vertexPath, const char* fragmentPath)
 
 void shader::setWorld(const std::string& name, std::vector<std::shared_ptr<hittable>>& world) const
 {
-    float radiuses[100];
-    glm::vec3 origins[100];
-    int material_types[100];
-    glm::vec3 material_albedo[100];
+    const int maxWorldSize = 100;
+    int worldSize = (maxWorldSize < world.size()) ? maxWorldSize : maxWorldSize;
 
-    for (int i = 0; i < world.size(); i++) {
-        origins[i] = std::static_pointer_cast<sphere>(world[i])->Origin;
-        radiuses[i] = std::static_pointer_cast<sphere>(world[i])->Radius;
-        material_types[i] = std::static_pointer_cast<sphere>(world[i])->Material->type;
-        material_albedo[i] = std::static_pointer_cast<sphere>(world[i])->Material->albedo;
+    float radiuses[maxWorldSize];
+    glm::vec3 origins[maxWorldSize];
+    int material_types[maxWorldSize];
+    glm::vec3 material_albedo[maxWorldSize];
+
+
+    for (int i = 0; i < worldSize; i++) {
+        auto s = std::static_pointer_cast<sphere>(world[i]);
+
+        origins[i] = s->Origin;
+        radiuses[i] = s->Radius;
+        material_types[i] = s->Material->type;
+        material_albedo[i] = s->Material->albedo;
     }
-    glUniform1fv(glGetUniformLocation(ID, (name + "Radiuses").c_str()), 100, radiuses);
-    glUniform3fv(glGetUniformLocation(ID, (name + "Origins").c_str()), 100, glm::value_ptr(origins[0]));
-    glUniform1iv(glGetUniformLocation(ID, (name + "MaterialTypes").c_str()), 100, material_types);
-    glUniform3fv(glGetUniformLocation(ID, (name + "MaterialAlbedos").c_str()), 100, glm::value_ptr(material_albedo[0]));
+    glUniform1fv(glGetUniformLocation(ID, (name + "Radiuses").c_str()), worldSize, radiuses);
+    glUniform3fv(glGetUniformLocation(ID, (name + "Origins").c_str()), worldSize, glm::value_ptr(origins[0]));
+    glUniform1iv(glGetUniformLocation(ID, (name + "MaterialTypes").c_str()), worldSize, material_types);
+    glUniform3fv(glGetUniformLocation(ID, (name + "MaterialAlbedos").c_str()), worldSize, glm::value_ptr(material_albedo[0]));
 }
 
 void shader::checkCompileErrors(unsigned int shader, std::string type)

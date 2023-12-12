@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "Helper.h"
 
 class material {
 public:
@@ -8,3 +9,4 @@ public:
 	int type;
 	glm::vec3 albedo;
 };
+
