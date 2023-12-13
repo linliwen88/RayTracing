@@ -59,7 +59,7 @@ shader::shader(const char* vertexPath, const char* fragmentPath)
 void shader::setWorld(const std::string& name, std::vector<std::shared_ptr<hittable>>& world) const
 {
     const int maxWorldSize = 100;
-    int worldSize = (maxWorldSize < world.size()) ? maxWorldSize : maxWorldSize;
+    int worldSize = (maxWorldSize < world.size()) ? maxWorldSize : world.size();
 
     float radiuses[maxWorldSize];
     glm::vec3 origins[maxWorldSize];
