@@ -75,9 +75,11 @@ private:
 	static float lastX;
 	static float lastY;
 	static bool firstMouse;
+	static bool canMoveCameraLookAt;
 
 	static void processInput(GLFWwindow* window);
 	static void callback_framebuffer_size(GLFWwindow* window, int width, int height);
 	static void callback_mouse(GLFWwindow* window, double xpos, double ypos);
+	static void callback_mouse_button(GLFWwindow* window, int button, int action, int mods);
 	static void callback_scroll(GLFWwindow* window, double xoffset, double yoffset);
 };

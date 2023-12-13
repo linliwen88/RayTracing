@@ -7,6 +7,7 @@ float App::lastFrame = 1.0f;
 float App::lastX = 0.0f;
 float App::lastY = 0.0f;
 bool App::firstMouse = true;
+bool App::canMoveCameraLookAt = false;
 
 bool App::anti_alias = true;
 int App::shading_mode = 1;
@@ -198,6 +199,7 @@ int App::set_up_glfw()
 
     glfwSetFramebufferSizeCallback(window, callback_framebuffer_size);
     glfwSetCursorPosCallback(window, callback_mouse);
+    glfwSetMouseButtonCallback(window, callback_mouse_button);
     glfwSetScrollCallback(window, callback_scroll);
 }
 
@@ -350,7 +352,21 @@ void App::callback_mouse(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
 
-    cam->ProcessMouseMovement(xoffset, yoffset);
+    if(canMoveCameraLookAt) cam->ProcessMouseMovement(xoffset, yoffset);
+    
+}
+
+void App::callback_mouse_button(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        canMoveCameraLookAt = true;
+    }
+    else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+    {
+        canMoveCameraLookAt = false;
+    }
+    return;
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
