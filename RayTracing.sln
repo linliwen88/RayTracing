@@ -5,9 +5,14 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGLPractice", "RayTracing\RayTracing.vcxproj", "{91E6F2E7-7CCA-418B-B92C-2FE47F2D209A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RayTraceShpere", "RayTraceShpere\RayTraceShpere.vcxproj", "{4BC3DE15-679B-4240-BA6D-5484D18B2D66}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RayTrace_GPU", "RayTraceShpere\RayTraceShpere.vcxproj", "{4BC3DE15-679B-4240-BA6D-5484D18B2D66}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RayTrace_CPU", "RayTrace_CPU\RayTrace_CPU.vcxproj", "{249FDB85-CBBC-42F8-89F0-8946675DF822}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{974E44AC-9180-4975-90F5-4DFEB80CAF8D}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

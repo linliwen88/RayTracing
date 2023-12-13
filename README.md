@@ -31,5 +31,4 @@ The differences: \
 ### TODOs:
 - Make dielectric material
 - Add metal material fuzziness
-- Adjust camera look at control
 - Add other primitive shapes (e.g. cube)
