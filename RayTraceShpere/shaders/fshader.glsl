@@ -68,19 +68,26 @@ struct Sphere {
 };
 
 
+vec2 randSeed = texCoord;
 
 // utility functions
-float rand(vec2 co, float min, float max){
+float rand(vec2 seed, float min, float max){
     // return random float between [min, max]
-    return  fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453123) * (max - min) + min;
-
+    float result = fract(sin(dot(randSeed, vec2(12.9898,78.233))) * 43758.5453123) * (max - min) + min;
+    randSeed += seed;
+    return  result;
 }
+
+//float rand(vec2 seed, float min, float max){
+//    // return random float between [min, max]
+//    float result = fract(sin(dot(seed, vec2(12.9898,78.233))) * 43758.5453123) * (max - min) + min;
+//    // randSeed += seed;
+//    return  result;
+//}
 
 vec3 randVec3(vec3 seed) {
     return vec3(rand(seed.xy, -0.5, 0.5), rand(seed.yz, -0.5, 0.5), rand(seed.xz, -0.5, 0.5));
 }
-
-vec2 randSeed = texCoord;
 
 vec3 random_in_unit_sphere(in vec3 seed) {
 //    // reeturn any random vector, causes weird artifact
@@ -89,6 +96,7 @@ vec3 random_in_unit_sphere(in vec3 seed) {
 //    randSeed += seed.xy;
 //
 //    return p;
+
 
     // reject when p.length() > 1.0
     vec3 p;
@@ -273,5 +281,4 @@ void main() {
 
         FragColor = vec4(clamp(pixelColor, 0.0, 1.0), 1.0);
     }
-    
 }
