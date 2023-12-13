@@ -43,6 +43,15 @@ int main()
     auto ground = std::make_shared<sphere>(glm::vec3(0.0f, -1000.f,  0.f), 1000.0f, material_ground);
     myRayTracer->addObjectToWorld(ground);
 
+    auto material_1 = std::make_shared<material>(dielectric, glm::vec3(0.5f));
+    myRayTracer->addObjectToWorld(std::make_shared<sphere>(glm::vec3(0.f, 1.f, 0.f), 1.0f, material_1));
+
+    auto material_2 = std::make_shared<material>(lambertian, glm::vec3(0.4f, 0.2f, 0.1f));
+    myRayTracer->addObjectToWorld(std::make_shared<sphere>(glm::vec3(-4.f, 1.f, 0.f), 1.0f, material_2));
+
+    auto material_3 = std::make_shared<material>(metal, glm::vec3(0.7f, 0.6f, 0.5f));
+    myRayTracer->addObjectToWorld(std:: make_shared<sphere>(glm::vec3(4.f, 1.f, 0.f), 1.0f, material_3));
+
 
     for (int a = -5; a < 5; a++)
     {

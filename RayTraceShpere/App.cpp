@@ -1,8 +1,8 @@
 #include "App.h"
 #include "Helper.h"
 
-// camera* App::cam = new camera(glm::vec3(13.f, 2.f, 3.f));
-camera* App::cam = new camera(glm::vec3(0.f, 1.0f, 0.f));
+camera* App::cam = new camera(glm::vec3(-0.45f, 2.4f, 10.6f));
+// camera* App::cam = new camera(glm::vec3(0.f, 1.0f, 0.f));
 float App::deltaTime = 1.0f;
 float App::lastFrame = 1.0f;
 float App::lastX = 0.0f;
@@ -198,7 +198,7 @@ int App::set_up_glfw()
     glViewport(0, 0, screenWidth, screenHeight);
 
     glfwSetFramebufferSizeCallback(window, callback_framebuffer_size);
-    // glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, callback_mouse);
     glfwSetScrollCallback(window, callback_scroll);
 }
 
