@@ -8,10 +8,10 @@
 #include "material.h"
 #include "sphere.h"
 #include "Helper.h"
+#define __LAPTOP__
 
 int main()
 {
-
     // viewport size
     const float ASPECT_RATIO = 16.0 / 9.0;
     const int SCR_HEIGHT = 600;
@@ -40,7 +40,7 @@ int main()
     //myRayTracer->addObjectToWorld(ground);
 
     auto material_ground = std::make_shared<material>(lambertian, glm::vec3(0.5f, 0.5f, 0.5f));
-    auto ground = std::make_shared<sphere>(glm::vec3(0.0f, -1000.f,  0.f), 1000.0f, material_ground);
+    auto ground = std::make_shared<sphere>(glm::vec3(0.0f, -1000.f, 0.f), 1000.0f, material_ground);
     myRayTracer->addObjectToWorld(ground);
 
     auto material_1 = std::make_shared<material>(dielectric, glm::vec3(0.5f));
@@ -50,9 +50,9 @@ int main()
     myRayTracer->addObjectToWorld(std::make_shared<sphere>(glm::vec3(-4.f, 1.f, 0.f), 1.0f, material_2));
 
     auto material_3 = std::make_shared<material>(metal, glm::vec3(0.7f, 0.6f, 0.5f));
-    myRayTracer->addObjectToWorld(std:: make_shared<sphere>(glm::vec3(4.f, 1.f, 0.f), 1.0f, material_3));
+    myRayTracer->addObjectToWorld(std::make_shared<sphere>(glm::vec3(4.f, 1.f, 0.f), 1.0f, material_3));
 
-
+#ifndef __LAPTOP__
     for (int a = -5; a < 5; a++)
     {
         for (int b = -5; b < 5; b++)
@@ -89,6 +89,7 @@ int main()
             }
         }
     }
+#endif
 
     myRayTracer->set_shader_uniform();
 
