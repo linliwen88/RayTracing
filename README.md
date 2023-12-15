@@ -6,7 +6,10 @@ Tutorial: https://raytracing.github.io/books/RayTracingInOneWeekend.html
 ![RayTraceing_CPU](/pics/RayTracing_CPU.png "Ray Tracing computed in CPU with multithreading")
 
 ## Ray Tracing computed in GPU (fragment shader)
-![RayTraceing_CPU](/pics/RayTracing_GPU.png "Ray Tracing computed in CPU with multithreading")
+![RayTraceing_GPU](/pics/RayTracing_GPU.png "Ray Tracing computed in GPU fragment shader")
+
+![RayTraceing_GPU](/pics/RayTrace_GPU.gif "Ray Tracing computed in GPUfragment shader")
+
 
 ### Issues
 #### Not random enough
